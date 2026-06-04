@@ -20,6 +20,8 @@ public class Program {
         agenda.adicionarTarefa(tarefa2);
         agenda.adicionarTarefa(tarefa3);
 
+        agenda.removerTarefa(tarefa2);
+
         agenda.mostrarAgenda();
     }
 }
