@@ -1,20 +1,23 @@
 package core;
 
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.GregorianCalendar;
 
 public class Agenda {
     private Tarefa ultimo;
     private Tarefa tarefaAtual;
-
-    public Agenda(Tarefa ultimo) {
+    LocalDate data;
+    
+    public Agenda(Tarefa ultimo, LocalDate data) {
         this.ultimo = ultimo;
+        this.data = data;
     }
 
-    public Agenda() {
-        this(null);
+    public Agenda(LocalDate data) {
+        this.ultimo = null;
+        this.tarefaAtual = null;
+        this.data = data;
     }
 
     public boolean adicionarTarefa(Tarefa novaTarefa) {
@@ -26,7 +29,8 @@ public class Agenda {
             return true;
         }
 
-        if (novaTarefa.getHorario().after(ultimo.getHorario())) {
+        // se a nova tarefa for depois da ultima
+        if (novaTarefa.getHorario().isAfter(ultimo.getHorario())) {
             novaTarefa.proxTarefa = ultimo.proxTarefa;
             novaTarefa.antTarefa = ultimo;
             ultimo.proxTarefa.antTarefa = novaTarefa;
@@ -35,9 +39,10 @@ public class Agenda {
             return true;
         }
 
+        // caso geral
         Tarefa atual = ultimo.proxTarefa;
         while (true) {
-            if (novaTarefa.getHorario().before(atual.getHorario())) {
+            if (novaTarefa.getHorario().isBefore(atual.getHorario())) {
                 novaTarefa.proxTarefa = atual;
                 novaTarefa.antTarefa = atual.antTarefa;
                 atual.antTarefa.proxTarefa = novaTarefa;
@@ -48,7 +53,7 @@ public class Agenda {
             if (atual == ultimo) break;
             atual = atual.proxTarefa;
         }
-
+        // retorna falso se não encontrar intervalo para colocar a nova tarefa
         return false;
     }
 
@@ -84,23 +89,31 @@ public class Agenda {
     }
 
     public void definirTarefaAtual() {
-        var agora = Date.from(Instant.now());
-        var horario = (new GregorianCalendar(2026, GregorianCalendar.JANUARY, 1, agora.getHours(), agora.getMinutes())).getTime();
-
+        LocalTime agora = LocalTime.now();
+        
+        //caso não haja nenhuma tarefa
         if (ultimo == null) {
             tarefaAtual = null;
             return;
         }
 
+        //caso haja haja apenas uma tarefa
         if (ultimo.proxTarefa == ultimo) {
             tarefaAtual = ultimo;
             return;
         }
 
         Tarefa node = ultimo.proxTarefa;
+
+        //caso a primeira tarefa for depois de "agora"
+        if (agora.isBefore(node.getHorario())) {
+            tarefaAtual = node;
+        }
+
+        //caso geral
         while (true) {
-            var depoisDoAtual = horario.after(node.getHorario());
-            var antesDoProximo = horario.before(node.proxTarefa.getHorario());
+            boolean depoisDoAtual = agora.isAfter(node.getHorario());
+            boolean antesDoProximo = agora.isBefore(node.proxTarefa.getHorario());
 
             if (depoisDoAtual && antesDoProximo) {
                 while (node.getStatus() == StatusTarefa.Pulado) {
@@ -108,6 +121,7 @@ public class Agenda {
                     if (node == ultimo) break;
                 }
                 tarefaAtual = node;
+                System.out.println("definida tarefa atual");
                 break;
             }
 

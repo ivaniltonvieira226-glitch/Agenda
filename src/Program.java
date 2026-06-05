@@ -1,30 +1,36 @@
 import core.Agenda;
 import core.Tarefa;
 
-import java.util.GregorianCalendar;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class Program {
     public static void main(String[] args) {
-        Agenda agenda = new Agenda();
 
-        var data1 = new GregorianCalendar(2026, GregorianCalendar.JANUARY, 1, 10, 30);
-        var tarefa1 = new Tarefa("Estudar", "", data1.getTime());
+        Agenda agenda = new Agenda(LocalDate.now());
 
-        var data2 = new GregorianCalendar(2026, GregorianCalendar.JANUARY, 1, 9, 30);
-        var tarefa2 = new Tarefa("Comer", "", data2.getTime(), true);
 
-        var data3 = new GregorianCalendar(2026, GregorianCalendar.JANUARY, 1, 11, 30);
-        var tarefa3 = new Tarefa("Descansar", "", data3.getTime());
+        LocalTime horario1 = LocalTime.of(14, 30);
+        Tarefa tarefa1 = new Tarefa("Estudar", "", horario1);
 
-        var data4 = new GregorianCalendar(2026, GregorianCalendar.JANUARY, 1, 8, 30);
-        var tarefa4 = new Tarefa("Acordar", "", data4.getTime());
+
+        LocalTime horario2 = LocalTime.of(13, 0);
+        Tarefa tarefa2 = new Tarefa("Comer", "", horario2, true);
+
+
+        LocalTime horario3 = LocalTime.of(15, 0);
+        Tarefa tarefa3 = new Tarefa("Descansar", "", horario3);
+
+
+        LocalTime horario4 = LocalTime.of(15,30);
+        Tarefa tarefa4 = new Tarefa("Acordar", "", horario4);
 
         agenda.adicionarTarefa(tarefa1);
         agenda.adicionarTarefa(tarefa2);
         agenda.adicionarTarefa(tarefa3);
         agenda.adicionarTarefa(tarefa4);
 
-//        agenda.removerNaoCiclicos();
+
         agenda.definirTarefaAtual();
 
         agenda.mostrarAgenda();

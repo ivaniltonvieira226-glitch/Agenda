@@ -1,18 +1,18 @@
 package core;
 
-import java.util.Date;
+import java.time.LocalTime;
 
 public class Tarefa {
     private String nome;
     private String descricao;
-    private Date horario;
+    private LocalTime horario;
     private StatusTarefa status;
     private boolean ciclico;
 
     public Tarefa antTarefa;
     public Tarefa proxTarefa;
 
-    public Tarefa(String nome, String descricao, Date horario) {
+    public Tarefa(String nome, String descricao, LocalTime horario) {
         this.nome = nome;
         this.descricao = descricao;
         this.horario = horario;
@@ -20,7 +20,7 @@ public class Tarefa {
         this.ciclico = false;
     }
 
-    public Tarefa(String nome, String descricao, Date horario, boolean ciclico) {
+    public Tarefa(String nome, String descricao, LocalTime horario, boolean ciclico) {
         this(nome, descricao, horario);
         this.ciclico = ciclico;
     }
@@ -33,7 +33,7 @@ public class Tarefa {
         return descricao;
     }
 
-    public Date getHorario() {
+    public LocalTime getHorario() {
         return horario;
     }
 
