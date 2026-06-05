@@ -7,20 +7,24 @@ import java.util.ArrayList;
 public class Agenda {
     private Tarefa ultimo;
     private Tarefa tarefaAtual;
-    LocalDate data;
-    
+    private LocalDate data;
+
     public Agenda(Tarefa ultimo, LocalDate data) {
         this.ultimo = ultimo;
-        this.data = data;
-    }
-
-    public Agenda(LocalDate data) {
-        this.ultimo = null;
         this.tarefaAtual = null;
         this.data = data;
     }
 
-    public boolean adicionarTarefa(Tarefa novaTarefa) {
+    public Agenda(LocalDate data) {
+        this(null, data);
+    }
+
+    public Agenda() {
+        this(null, LocalDate.now());
+    }
+
+
+    private boolean adicionarALista(Tarefa novaTarefa) {
         // caso de primeira tarefa
         if (ultimo == null) {
             ultimo = novaTarefa;
@@ -57,22 +61,35 @@ public class Agenda {
         return false;
     }
 
-    public void removerTarefa(Tarefa tarefa) {
+    private boolean removerDaLista(Tarefa tarefa) {
         if (ultimo == null) {
-            return;
+            return false;
         }
 
         // única tarefa
         if (tarefa.proxTarefa == tarefa) {
             ultimo = null;
-            return;
+            return false;
         }
 
         tarefa.antTarefa.proxTarefa = tarefa.proxTarefa;
         tarefa.proxTarefa.antTarefa = tarefa.antTarefa;
         if (tarefa == ultimo) ultimo = tarefa.antTarefa;
+        return true;
     }
 
+    public void removerTarefa(Tarefa tarefa) {
+        if (removerDaLista(tarefa)) {
+            if (tarefa == tarefaAtual) {
+                definirTarefaAtual();
+            }
+            return;
+        }
+        System.out.println("nenhuma tarefa foi removida");
+    }
+
+    //talvez possa remover esse método 
+    //já que o método que gera uma agenda nova não inclue os não ciclicos
     public void removerNaoCiclicos() {
         var remover = new ArrayList<Tarefa>();
 
@@ -84,12 +101,13 @@ public class Agenda {
         }
 
         for (Tarefa tarefa : remover) {
-            removerTarefa(tarefa);
+            removerDaLista(tarefa);
         }
     }
 
     public void definirTarefaAtual() {
-        LocalTime agora = LocalTime.now();
+        // LocalTime agora = LocalTime.now();
+        LocalTime agora = LocalTime.of(7, 30);
         
         //caso não haja nenhuma tarefa
         if (ultimo == null) {
@@ -103,9 +121,13 @@ public class Agenda {
             return;
         }
 
+        //caso a ultima tarefa seja antes de "agora"
+        if (ultimo.getHorario().isBefore(agora)) {
+            tarefaAtual = ultimo;
+        }
+
         Tarefa node = ultimo.proxTarefa;
 
-        //caso a primeira tarefa for depois de "agora"
         if (agora.isBefore(node.getHorario())) {
             tarefaAtual = node;
         }
@@ -121,7 +143,6 @@ public class Agenda {
                     if (node == ultimo) break;
                 }
                 tarefaAtual = node;
-                System.out.println("definida tarefa atual");
                 break;
             }
 
@@ -132,7 +153,14 @@ public class Agenda {
         }
     }
 
+    public void adicionarTarefa(Tarefa novaTarefa) {
+        if (adicionarALista(novaTarefa)) {
+            definirTarefaAtual();
+        }
+    }
+
     public void concluirTarefa() {
+        tarefaAtual.setStatus(StatusTarefa.Concluido);
         tarefaAtual = tarefaAtual.proxTarefa;
     }
 
@@ -142,13 +170,20 @@ public class Agenda {
     }
 
     public void falharTarefa() {
+        tarefaAtual.setStatus(StatusTarefa.Falhado);
         tarefaAtual = tarefaAtual.proxTarefa;
     }
 
+    public LocalDate getData() {
+        return data;
+    }
+
+    public String getTarefaAtual() {
+        return tarefaAtual.getNome();
+    }
+
     public void mostrarAgenda() {
-        System.out.println("Agenda");
-        System.out.println("Tarefa atual: " + tarefaAtual.getNome());
-        System.out.println("\nExibindo todas as tarefas da agenda:");
+        System.out.println("Exibindo todas as tarefas da agenda:");
 
         int i = 0;
         Tarefa node = ultimo.proxTarefa;
@@ -158,4 +193,46 @@ public class Agenda {
             node = node.proxTarefa;
         }
     }
+
+    public Relatorio gerarRelatorio() {
+
+        int tarefasPuladas = 0;
+        int tarefasFalhas = 0;
+        int tarefasConcluidas = 0;
+        
+        if (ultimo == null) {
+            return new Relatorio();
+        }
+        
+        Tarefa node = ultimo.proxTarefa;
+        do  {
+            if (node.getStatus() == StatusTarefa.Pulado) tarefasPuladas++;
+            if (node.getStatus() == StatusTarefa.Falhado) tarefasFalhas++;
+            if (node.getStatus() == StatusTarefa.Concluido) tarefasConcluidas++;
+
+            node = node.proxTarefa;
+        } while (node != ultimo.proxTarefa);
+
+        return new Relatorio(this, tarefasPuladas, tarefasFalhas, tarefasConcluidas);
+    }
+
+    public Agenda novaAgendaCiclica() {
+        LocalDate amanha = data.plusDays(1);
+        Agenda novaAgenda = new Agenda(amanha);
+
+        if (ultimo == null) {
+            return novaAgenda;
+        }
+        
+        Tarefa node = ultimo.proxTarefa;
+        do  {
+            if (node.isCiclico()) {
+                novaAgenda.adicionarALista(node.copiarTarefa());
+            }
+            node = node.proxTarefa;
+        } while (node != ultimo.proxTarefa);
+
+        return novaAgenda;
+    }
+
 }
