@@ -48,4 +48,8 @@ public class Tarefa {
     public boolean isCiclico() {
         return ciclico;
     }
+
+    public Tarefa copiarTarefa() {
+        return new Tarefa(this.nome, this.descricao, this.horario, this.ciclico);
+    }
 }

@@ -1,38 +1,57 @@
-import core.Agenda;
+import core.Gerenciador;
+import core.Relatorio;
 import core.Tarefa;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class Program {
     public static void main(String[] args) {
 
-        Agenda agenda = new Agenda(LocalDate.now());
+        Tarefa tarefa1 = new Tarefa("Acordar", "Tem que acordar né pae", LocalTime.of(7, 30), true);
+        Tarefa tarefa2 = new Tarefa("Café da manhã", "Tem que comer né pae", LocalTime.of(8, 0), true);
+        Tarefa tarefa3 = new Tarefa("Estudar", "Ficar menos burro da silva", LocalTime.of(9, 30), true);
+        Tarefa tarefa4 = new Tarefa("Al Mosso", "Tem que comer né pae", LocalTime.of(12, 00), true);
+        Tarefa tarefa5 = new Tarefa("Estudar mais", "69 QI", LocalTime.of(13, 40), true);
+        Tarefa tarefa6 = new Tarefa("Vagabundar da Silva", "Descançar né, o caba num é de ferro", LocalTime.of(17, 40));
+        Tarefa tarefa7 = new Tarefa("A mimir", "Descançar né, o caba num é de ferro", LocalTime.of(22, 30));
 
+        Gerenciador gerenciador = new Gerenciador();
 
-        LocalTime horario1 = LocalTime.of(14, 30);
-        Tarefa tarefa1 = new Tarefa("Estudar", "", horario1);
+        //adicionando tarefas a agenda
+        gerenciador.getAgenda().adicionarTarefa(tarefa1);
+        gerenciador.getAgenda().adicionarTarefa(tarefa2);
+        gerenciador.getAgenda().adicionarTarefa(tarefa3);
+        gerenciador.getAgenda().adicionarTarefa(tarefa4);
+        gerenciador.getAgenda().adicionarTarefa(tarefa5);
+        gerenciador.getAgenda().adicionarTarefa(tarefa6);
+        gerenciador.getAgenda().adicionarTarefa(tarefa7);
+        
 
+        //se quiser que sincronize com o horario atual mude a declaração da variavel agora em Agenda.definirTarefaAtual
+        //mudança de status de tarefas
+        gerenciador.getAgenda().concluirTarefa();
+        gerenciador.getAgenda().concluirTarefa();
+        gerenciador.getAgenda().pularTarefa();   
+        
+        System.out.println("\nA tarefa atual é:");
+        System.out.println(gerenciador.getAgenda().getTarefaAtual());
 
-        LocalTime horario2 = LocalTime.of(13, 0);
-        Tarefa tarefa2 = new Tarefa("Comer", "", horario2, true);
+        gerenciador.getAgenda().concluirTarefa();
+        gerenciador.getAgenda().concluirTarefa();
+        gerenciador.getAgenda().pularTarefa();
+        gerenciador.getAgenda().falharTarefa();
 
+        gerenciador.finalizarDia();
 
-        LocalTime horario3 = LocalTime.of(15, 0);
-        Tarefa tarefa3 = new Tarefa("Descansar", "", horario3);
+        Relatorio[] relatorios = gerenciador.getHistorico().getRelatorios();
 
+        for (Relatorio relatorio: relatorios) {
+            System.out.println(relatorio.getTitulo());
+            relatorio.getAgenda().mostrarAgenda();
+            System.out.println("Tarefas Concluidas: " + relatorio.getConcluidas());
+            System.out.println("Tarefas Puladas: " + relatorio.getPuladas());
+            System.out.println("Tarefas Falhas: " + relatorio.getFalhas());
+        }
 
-        LocalTime horario4 = LocalTime.of(15,30);
-        Tarefa tarefa4 = new Tarefa("Acordar", "", horario4);
-
-        agenda.adicionarTarefa(tarefa1);
-        agenda.adicionarTarefa(tarefa2);
-        agenda.adicionarTarefa(tarefa3);
-        agenda.adicionarTarefa(tarefa4);
-
-
-        agenda.definirTarefaAtual();
-
-        agenda.mostrarAgenda();
     }
 }
