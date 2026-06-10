@@ -20,11 +20,24 @@ public class Tarefa {
         this.status = StatusTarefa.Pendente;
         this.ciclico = ciclico;
     }
+
+    public Tarefa(String nome, String descricao, LocalTime horario, StatusTarefa status, boolean ciclico) {
+        this(nome, descricao, horario, ciclico);
+        this.status = status;    
+    }
     
     public Tarefa(int id, String nome, String descricao, LocalTime horario, StatusTarefa status, boolean ciclico) {
         this.id = id;
         this(nome, descricao, horario, ciclico);
         this.status = status;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getNome() {
