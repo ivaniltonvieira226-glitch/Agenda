@@ -5,24 +5,31 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 
 public class Agenda {
+    private int id;
     private Tarefa ultimo;
     private Tarefa tarefaAtual;
     private LocalDate data;
 
-    public Agenda(Tarefa ultimo, LocalDate data) {
-        this.ultimo = ultimo;
-        this.tarefaAtual = null;
+    public Agenda(LocalDate data) {
         this.data = data;
     }
 
-    public Agenda(LocalDate data) {
-        this(null, data);
-    }
-
     public Agenda() {
-        this(null, LocalDate.now());
+        this(LocalDate.now());
     }
 
+    public Agenda(int id, LocalDate data) {
+        this.id = id;
+        this.data = data;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     private boolean adicionarALista(Tarefa novaTarefa) {
         // caso de primeira tarefa
@@ -58,6 +65,7 @@ public class Agenda {
             atual = atual.proxTarefa;
         }
         // retorna falso se não encontrar intervalo para colocar a nova tarefa
+        System.out.println("Não foi possivel encontrar um intervalo para encaixar " + novaTarefa.getNome());
         return false;
     }
 
@@ -122,7 +130,7 @@ public class Agenda {
         }
 
         //caso a ultima tarefa seja antes de "agora"
-        if (ultimo.getHorario().isBefore(agora)) {
+        if (!agora.isBefore(ultimo.getHorario())) {
             tarefaAtual = ultimo;
         }
 
@@ -134,7 +142,7 @@ public class Agenda {
 
         //caso geral
         while (true) {
-            boolean depoisDoAtual = agora.isAfter(node.getHorario());
+            boolean depoisDoAtual = !agora.isBefore(node.getHorario());
             boolean antesDoProximo = agora.isBefore(node.proxTarefa.getHorario());
 
             if (depoisDoAtual && antesDoProximo) {
@@ -146,7 +154,7 @@ public class Agenda {
                 break;
             }
 
-            if (node.getStatus() == StatusTarefa.Pendente) node.setStatus(StatusTarefa.Falhado);
+            if (node.getHorario().isBefore(agora) && node.getStatus() == StatusTarefa.Pendente) node.setStatus(StatusTarefa.Falhado);
 
             if (node == ultimo) break;
             node = node.proxTarefa;
