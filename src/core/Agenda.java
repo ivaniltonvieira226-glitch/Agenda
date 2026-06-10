@@ -226,4 +226,29 @@ public class Agenda {
         return novaAgenda;
     }
 
+    public Tarefa[] getTarefas() {
+        if (ultimo == null) {
+            return new Tarefa[0];
+        }
+
+        int i = 0;
+        Tarefa node = ultimo.proxTarefa;
+        while (true) {
+            i++;
+            if (node == ultimo) break;
+            node = node.proxTarefa;
+        }
+
+        Tarefa[] tarefas = new Tarefa[i];
+
+        int j = 0;
+        node = ultimo.proxTarefa;
+        while (true) {
+            tarefas[j++] = node;
+            if (node == ultimo) break;
+            node = node.proxTarefa;
+        }
+        return tarefas;
+    }
+
 }

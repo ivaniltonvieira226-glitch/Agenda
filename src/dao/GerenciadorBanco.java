@@ -58,7 +58,7 @@ public class GerenciadorBanco {
   public Historico montarHistorico() {
     Historico historico = new Historico();
 
-    String sql = "SELECT id, data" +
+    String sql = "SELECT id, data " +
       "FROM agenda " +
       "ORDER BY data;";
 
@@ -108,6 +108,51 @@ public class GerenciadorBanco {
 
     } catch(SQLException e) {
       System.err.println("Erro ao tentar buscar tarefas de uma agenda: " + e.getMessage());
+    }
+  }
+
+  public void adicionarHistoricoTeste(Agenda agenda) {
+    String agendaSql = "INSERT INTO agenda (data) " +
+      "VALUES (?);";
+    String tarefaSql = "INSERT INTO tarefa (nome, descricao, horario, status, ciclico, id_agenda) " +
+      "VALUES (?, ?, ?, ?, ?, ?);" ;
+
+    try (PreparedStatement pstmt = conn.prepareStatement(agendaSql, Statement.RETURN_GENERATED_KEYS)) {
+      pstmt.setString(1, agenda.getData().toString());
+
+      pstmt.executeUpdate();
+
+      try (ResultSet rsKey = pstmt.getGeneratedKeys()) {
+        if (rsKey.next()) {
+          agenda.setId(rsKey.getInt(1));;
+        }
+      }
+    } catch (SQLException e) {
+      System.err.println("Erro ao registrar agenda de teste: " + e.getMessage());
+    }
+
+    try (PreparedStatement pstmt = conn.prepareStatement(tarefaSql, Statement.RETURN_GENERATED_KEYS)) {
+    for (Tarefa tarefa : agenda.getTarefas()) {
+      pstmt.setString(1, tarefa.getNome());
+      pstmt.setString(2, tarefa.getDescricao());
+      pstmt.setString(3, tarefa.getHorario().toString());
+      pstmt.setString(4, tarefa.getStatus().toString());
+      pstmt.setInt(5, tarefa.isCiclico()? 1: 0);
+      pstmt.setInt(6, agenda.getId());
+
+      pstmt.executeUpdate();
+      try (ResultSet rsKey = pstmt.getGeneratedKeys()) {
+        if (rsKey.next()) {
+        int idTarefa = rsKey.getInt(1);
+        tarefa.setId(idTarefa);
+        }
+      } catch (SQLException e) {
+        System.err.println("Erro ao tentar buscar id da tarefa registrada: " + e.getMessage());
+      }
+    }
+
+    } catch (SQLException e) {
+      System.err.println("Erro ao inserir tarefas para teste: " + e.getMessage());
     }
   }
 }
