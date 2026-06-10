@@ -11,7 +11,7 @@ public class Gerenciador {
   public Gerenciador() {
     this.dao = new GerenciadorBanco();
     this.agenda = new Agenda();
-    this.historico = new Historico();
+    this.historico = buscarHistorico();
   }
 
   public Agenda getAgenda() {
@@ -22,8 +22,8 @@ public class Gerenciador {
     return historico;
   }
 
-  // private Historico buscarHistorico() {
-  //   return dao.montarHistorico();
-  // }
+  private Historico buscarHistorico() {
+    return dao.montarHistorico();
+  }
 
 }
