@@ -1,38 +1,29 @@
 package core;
 
+import dao.GerenciadorBanco;
 
 public class Gerenciador {
   
   private Agenda agenda;
   private Historico historico;
+  private GerenciadorBanco dao;
 
   public Gerenciador() {
+    this.dao = new GerenciadorBanco();
     this.agenda = new Agenda();
     this.historico = new Historico();
-  }
-
-  public Gerenciador(Agenda agenda) {
-    this.agenda = agenda;
-    this.historico = new Historico();
-  }
-
-  public Gerenciador(Agenda agenda, Historico historico) {
-    this.agenda = agenda;
-    this.historico = historico;
   }
 
   public Agenda getAgenda() {
     return agenda;
   }
 
-  public void finalizarDia() {
-    Relatorio relatorio = agenda.gerarRelatorio();
-    historico.adicionarRelatorio(relatorio);
-
-    agenda = agenda.novaAgendaCiclica();
-  }
-
-  public Historico getHistorico() {
+    public Historico getHistorico() {
     return historico;
   }
+
+  // private Historico buscarHistorico() {
+  //   return dao.montarHistorico();
+  // }
+
 }
