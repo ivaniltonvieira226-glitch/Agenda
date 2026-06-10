@@ -3,6 +3,7 @@ package core;
 import java.time.LocalTime;
 
 public class Tarefa {
+    private int id;
     private String nome;
     private String descricao;
     private LocalTime horario;
@@ -12,17 +13,18 @@ public class Tarefa {
     public Tarefa antTarefa;
     public Tarefa proxTarefa;
 
-    public Tarefa(String nome, String descricao, LocalTime horario) {
+    public Tarefa(String nome, String descricao, LocalTime horario, boolean ciclico) {
         this.nome = nome;
         this.descricao = descricao;
         this.horario = horario;
         this.status = StatusTarefa.Pendente;
-        this.ciclico = false;
-    }
-
-    public Tarefa(String nome, String descricao, LocalTime horario, boolean ciclico) {
-        this(nome, descricao, horario);
         this.ciclico = ciclico;
+    }
+    
+    public Tarefa(int id, String nome, String descricao, LocalTime horario, StatusTarefa status, boolean ciclico) {
+        this.id = id;
+        this(nome, descricao, horario, ciclico);
+        this.status = status;
     }
 
     public String getNome() {
