@@ -2,8 +2,18 @@ package dao;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
+import java.time.LocalTime;
+
+import core.Agenda;
+import core.Historico;
+import core.Relatorio;
+import core.StatusTarefa;
+import core.Tarefa;
 
 public class GerenciadorBanco {
   
@@ -42,6 +52,62 @@ public class GerenciadorBanco {
       stmt.execute(tarefaSql);
     } catch (SQLException e) {
       System.err.println("Erro ao tentar criar tabelas: " + e.getMessage());
+    }
+  }
+
+  public Historico montarHistorico() {
+    Historico historico = new Historico();
+
+    String sql = "SELECT id, data" +
+      "FROM agenda " +
+      "ORDER BY data;";
+
+    try (Statement stmt = conn.createStatement()) {
+      ResultSet rs = stmt.executeQuery(sql);
+      while (rs.next()) {
+        int id = rs.getInt("id");
+        LocalDate data = LocalDate.parse(rs.getString("data"));
+        
+        if (data.equals(LocalDate.now())) continue;
+        
+        Agenda agenda = new Agenda(id, data);
+        findTarefas(agenda);
+
+        Relatorio relatorio = agenda.gerarRelatorio();
+        historico.adicionarRelatorio(relatorio);
+      }
+
+    } catch (SQLException e) {
+      System.out.println("Erro ao buscar agenda para historico: " + e.getMessage());
+    }
+
+    return historico;
+  }
+
+  private void findTarefas(Agenda agenda) {
+    String sql = "SELECT id, nome, descricao, horario, status, ciclico " +
+    "FROM tarefa " +
+    "WHERE id_agenda = (?)";
+
+    try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+      pstmt.setInt(1, agenda.getId());
+      ResultSet rs = pstmt.executeQuery();
+
+      while (rs.next()) {
+        int id = rs.getInt("id");
+        String nome = rs.getString("nome");
+        String descricao = rs.getString("descricao");
+        LocalTime horario = LocalTime.parse(rs.getString("horario"));
+        StatusTarefa status = StatusTarefa.deString(rs.getString("status"));
+        boolean ciclico = rs.getInt("ciclico") == 1;
+
+        Tarefa tarefa = new Tarefa(id, nome, descricao, horario, status, ciclico);
+
+        agenda.adicionarTarefa(tarefa);
+      }
+
+    } catch(SQLException e) {
+      System.err.println("Erro ao tentar buscar tarefas de uma agenda: " + e.getMessage());
     }
   }
 }
