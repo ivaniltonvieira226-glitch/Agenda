@@ -96,23 +96,6 @@ public class Agenda {
         System.out.println("nenhuma tarefa foi removida");
     }
 
-    //talvez possa remover esse método 
-    //já que o método que gera uma agenda nova não inclue os não ciclicos
-    public void removerNaoCiclicos() {
-        var remover = new ArrayList<Tarefa>();
-
-        Tarefa nodeAtual = ultimo.proxTarefa;
-        while (true) {
-            if (!nodeAtual.isCiclico()) remover.add(nodeAtual);
-            if (nodeAtual == ultimo) break;
-            nodeAtual = nodeAtual.proxTarefa;
-        }
-
-        for (Tarefa tarefa : remover) {
-            removerDaLista(tarefa);
-        }
-    }
-
     public void definirTarefaAtual() {
         // LocalTime agora = LocalTime.now();
         LocalTime agora = LocalTime.of(7, 30);
