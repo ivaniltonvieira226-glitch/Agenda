@@ -143,7 +143,7 @@ public class GerenciadorBanco {
     System.err.println("Possivel erro lógico ao montar agenda atual");
     return new Agenda(0, null);
   }
-
+  //essa aqui vai ser privada quando acabarem os testes
   public void registrarAgenda(Agenda agenda) {
     String sql = "INSERT INTO agenda (data)" +
       "VALUES (?);";
