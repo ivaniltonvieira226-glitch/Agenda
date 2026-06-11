@@ -1,7 +1,5 @@
 package core;
 
-import javax.net.ssl.SSLEngineResult.Status;
-
 import dao.GerenciadorBanco;
 
 public class Gerenciador {
