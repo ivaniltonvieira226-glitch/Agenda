@@ -42,7 +42,7 @@ public class Agenda {
         return tarefaAtual;
     }
 
-    public void atualizarTarefa(StatusTarefa status) {
+    public void atualizarTarefaAtual(StatusTarefa status) {
         this.tarefaAtual.setStatus(status);
     }
 
