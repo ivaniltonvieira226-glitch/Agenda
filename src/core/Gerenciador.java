@@ -22,6 +22,12 @@ public class Gerenciador {
     return historico;
   }
 
+  public void adicionarTarefa(Tarefa tarefa) {
+    if (dao.registrarTarefa(tarefa, agenda.getId())) {
+      agenda.adicionarTarefa(tarefa);
+    }
+  }
+
   private Historico buscarHistorico() {
     return dao.montarHistorico();
   }
