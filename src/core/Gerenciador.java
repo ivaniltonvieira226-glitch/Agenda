@@ -10,7 +10,7 @@ public class Gerenciador {
 
   public Gerenciador() {
     this.dao = new GerenciadorBanco();
-    this.agenda = new Agenda();
+    this.agenda = buscarAgendaAtual();
     this.historico = buscarHistorico();
   }
 
@@ -24,6 +24,10 @@ public class Gerenciador {
 
   private Historico buscarHistorico() {
     return dao.montarHistorico();
+  }
+
+  private Agenda buscarAgendaAtual() {
+    return dao.montarAgendaAtual();
   }
 
 }

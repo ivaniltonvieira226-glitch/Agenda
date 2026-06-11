@@ -87,7 +87,8 @@ public class GerenciadorBanco {
   private void findTarefas(Agenda agenda) {
     String sql = "SELECT id, nome, descricao, horario, status, ciclico " +
     "FROM tarefa " +
-    "WHERE id_agenda = (?)";
+    "WHERE id_agenda = (?) " +
+    "ORDER BY horario;";
 
     try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
       pstmt.setInt(1, agenda.getId());
@@ -111,48 +112,99 @@ public class GerenciadorBanco {
     }
   }
 
-  public void adicionarHistoricoTeste(Agenda agenda) {
-    String agendaSql = "INSERT INTO agenda (data) " +
+  public Agenda montarAgendaAtual() {
+    Agenda agendaAtual;
+    String sql = "SELECT id, data " +
+      "FROM agenda " +
+      "WHERE id = (?);";
+
+    try (PreparedStatement pstmt = conn.prepareStatement(sql)){
+      pstmt.setString(1, LocalDate.now().toString());
+
+      ResultSet rs = pstmt.executeQuery();
+      if (rs.next()) {
+        int idAgenda = rs.getInt(1);
+        LocalDate data = LocalDate.parse(rs.getString("data"));
+
+        agendaAtual = new Agenda(idAgenda, data);
+
+        findTarefas(agendaAtual);
+        return agendaAtual;
+      }     
+
+      //registrar nova agenda
+      agendaAtual = new Agenda();
+      registrarAgenda(agendaAtual);
+      return agendaAtual;
+    } catch (SQLException e) {
+      System.err.println("Erro ao tentar buscar agenda atual: " + e.getMessage());
+    }
+    System.err.println("Possivel erro lógico ao montar agenda atual");
+    return new Agenda(0, null);
+  }
+
+  public void registrarAgenda(Agenda agenda) {
+    String sql = "INSERT INTO agenda (data)" +
       "VALUES (?);";
-    String tarefaSql = "INSERT INTO tarefa (nome, descricao, horario, status, ciclico, id_agenda) " +
-      "VALUES (?, ?, ?, ?, ?, ?);" ;
 
-    try (PreparedStatement pstmt = conn.prepareStatement(agendaSql, Statement.RETURN_GENERATED_KEYS)) {
+    try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       pstmt.setString(1, agenda.getData().toString());
-
       pstmt.executeUpdate();
 
       try (ResultSet rsKey = pstmt.getGeneratedKeys()) {
+
         if (rsKey.next()) {
-          agenda.setId(rsKey.getInt(1));;
+          int idAgenda = rsKey.getInt(1);
+          agenda.setId(idAgenda);
+          return;
         }
+      } catch (SQLException e) {
+        System.err.println("Erro ao buscar id da agenda registrada: " + e.getMessage());
       }
+      
     } catch (SQLException e) {
-      System.err.println("Erro ao registrar agenda de teste: " + e.getMessage());
+      System.err.println("Erro ao registrar nova agenda: " + e.getMessage());
+    }
+    System.err.println("Erro lógico em registrar nova agenda");
+  }
+
+  public boolean registrarTarefa(Tarefa tarefa, int idAgenda) {
+    String sql = "INSERT INTO tarefa (nome, descricao, horario, status, ciclico, id_agenda)" +
+      "VALUES (?, ?, ?, ?, ?, ?);";
+
+    if (idAgenda == 0) {
+      System.err.println("Erro ao tentar registrar tarefa: identificador invalido");
+      return false;
     }
 
-    try (PreparedStatement pstmt = conn.prepareStatement(tarefaSql, Statement.RETURN_GENERATED_KEYS)) {
-    for (Tarefa tarefa : agenda.getTarefas()) {
+    try (PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       pstmt.setString(1, tarefa.getNome());
       pstmt.setString(2, tarefa.getDescricao());
       pstmt.setString(3, tarefa.getHorario().toString());
       pstmt.setString(4, tarefa.getStatus().toString());
       pstmt.setInt(5, tarefa.isCiclico()? 1: 0);
-      pstmt.setInt(6, agenda.getId());
+      pstmt.setInt(6, idAgenda);
 
       pstmt.executeUpdate();
-      try (ResultSet rsKey = pstmt.getGeneratedKeys()) {
-        if (rsKey.next()) {
+
+      try (ResultSet rsKey = pstmt.getGeneratedKeys())  {
         int idTarefa = rsKey.getInt(1);
         tarefa.setId(idTarefa);
-        }
+        return true;
       } catch (SQLException e) {
         System.err.println("Erro ao tentar buscar id da tarefa registrada: " + e.getMessage());
       }
-    }
-
     } catch (SQLException e) {
-      System.err.println("Erro ao inserir tarefas para teste: " + e.getMessage());
+      System.err.println("Erro ao tentar registrar tarefa: " + e.getMessage());
+    }
+    return false;
+  }
+
+  public void adicionarHistoricoTeste(Agenda agenda) {
+    registrarAgenda(agenda);
+
+    for (Tarefa tarefa : agenda.getTarefas()) {
+      registrarTarefa(tarefa, agenda.getId());
     }
   }
 }
