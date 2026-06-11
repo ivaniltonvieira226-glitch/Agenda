@@ -22,6 +22,10 @@ public class Agenda {
         this.data = data;
     }
 
+    public Agenda(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }
@@ -200,24 +204,6 @@ public class Agenda {
         return new Relatorio(this, tarefasPuladas, tarefasFalhas, tarefasConcluidas);
     }
 
-    public Agenda novaAgendaCiclica() {
-        LocalDate amanha = data.plusDays(1);
-        Agenda novaAgenda = new Agenda(amanha);
-
-        if (ultimo == null) {
-            return novaAgenda;
-        }
-        
-        Tarefa node = ultimo.proxTarefa;
-        do  {
-            if (node.isCiclico()) {
-                novaAgenda.adicionarALista(node.copiarTarefa());
-            }
-            node = node.proxTarefa;
-        } while (node != ultimo.proxTarefa);
-
-        return novaAgenda;
-    }
 
     public Tarefa[] getTarefas() {
         if (ultimo == null) {
