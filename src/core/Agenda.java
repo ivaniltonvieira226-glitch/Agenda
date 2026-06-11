@@ -2,7 +2,6 @@ package core;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 
 public class Agenda {
     private int id;
