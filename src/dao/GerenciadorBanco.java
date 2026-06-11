@@ -113,6 +113,23 @@ public class GerenciadorBanco {
     }
   }
 
+  public boolean atualizarTarefa(int id, StatusTarefa status) {
+    String sql = "UPDATE tarefa " +
+      "SET status = ? " +
+      "WHERE id = ?;";
+
+    try (PreparedStatement pstmt = conn.prepareStatement(sql)){
+      pstmt.setString(1, status.toString());
+      pstmt.setInt(2, id);
+
+      pstmt.executeUpdate();
+      return true;
+    } catch(SQLException e) {
+      System.err.println("Erro ao tentar atualizar status da tarefa atual: " + e.getMessage());
+    }
+    return false;
+  }
+
   public Agenda montarAgendaAtual() {
     Agenda agendaAtual;
     String sql = "SELECT id, data " +

@@ -1,5 +1,7 @@
 package core;
 
+import javax.net.ssl.SSLEngineResult.Status;
+
 import dao.GerenciadorBanco;
 
 public class Gerenciador {
@@ -26,6 +28,14 @@ public class Gerenciador {
     if (dao.registrarTarefa(tarefa, agenda.getId())) {
       agenda.adicionarTarefa(tarefa);
     }
+  }
+
+  public void atualizarTarefaAtual(StatusTarefa status) {
+    if (dao.atualizarTarefa(agenda.getTarefaAtual().getId() ,status)) {
+      agenda.atualizarTarefaAtual(status);
+      return;
+    }
+    System.err.println("Não foi possivel atualizar a tarefa atual");
   }
 
   private Historico buscarHistorico() {
