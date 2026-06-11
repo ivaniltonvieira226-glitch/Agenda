@@ -34,8 +34,12 @@ public class Agenda {
         return data;
     }
 
-    public String getTarefaAtual() {
+    public String getNomeTarefaAtual() {
         return tarefaAtual.getNome();
+    }
+    
+    public Tarefa getTarefaAtual() {
+        return tarefaAtual;
     }
 
     public void atualizarTarefa(StatusTarefa status) {
