@@ -30,6 +30,14 @@ public class Gerenciador {
     System.err.println("Não foi possivel adicionar " + tarefa.getNome() + " a agenda, reinicia o aplicativo e tente novamente");
   }
 
+  public void removerTarefa(Tarefa tarefa) {
+    if (dao.removerTarefa(tarefa.getId())) {
+      agenda.removerTarefa(tarefa);
+      return;
+    }
+    System.err.println("Não foi possivel remover " + tarefa.getNome() + " da agenda, reinicie o aplicativo e tente novamente");
+  }
+
   public void atualizarTarefaAtual(StatusTarefa status) {
     if (dao.atualizarTarefa(agenda.getTarefaAtual().getId() ,status)) {
       agenda.atualizarTarefaAtual(status);

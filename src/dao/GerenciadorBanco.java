@@ -130,6 +130,21 @@ public class GerenciadorBanco {
     return false;
   }
 
+  public boolean removerTarefa(int id) {
+    String sql = "DELETE FROM tarefa " +
+      "WHERE id = ?;";
+
+    try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+      pstmt.setInt(1, id);
+
+      pstmt.executeUpdate();
+      return true;
+    } catch (SQLException e) {
+      System.err.println("Erro ao tentar deletar tarefa: " + e.getMessage());
+    }
+    return false;
+  }
+
   public Agenda montarAgendaAtual() {
     Agenda agendaAtual;
     String sql = "SELECT id, data " +
