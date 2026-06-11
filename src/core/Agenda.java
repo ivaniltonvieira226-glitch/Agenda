@@ -30,6 +30,18 @@ public class Agenda {
         this.id = id;
     }
 
+    public LocalDate getData() {
+        return data;
+    }
+
+    public String getTarefaAtual() {
+        return tarefaAtual.getNome();
+    }
+
+    public void atualizarTarefa(StatusTarefa status) {
+        this.tarefaAtual.setStatus(status);
+    }
+
     private boolean adicionarALista(Tarefa novaTarefa) {
         // caso de primeira tarefa
         if (ultimo == null) {
@@ -149,28 +161,6 @@ public class Agenda {
         }
     }
 
-    public void concluirTarefa() {
-        tarefaAtual.setStatus(StatusTarefa.Concluido);
-        tarefaAtual = tarefaAtual.proxTarefa;
-    }
-
-    public void pularTarefa() {
-        tarefaAtual.setStatus(StatusTarefa.Pulado);
-        tarefaAtual = tarefaAtual.proxTarefa;
-    }
-
-    public void falharTarefa() {
-        tarefaAtual.setStatus(StatusTarefa.Falhado);
-        tarefaAtual = tarefaAtual.proxTarefa;
-    }
-
-    public LocalDate getData() {
-        return data;
-    }
-
-    public String getTarefaAtual() {
-        return tarefaAtual.getNome();
-    }
 
     public void mostrarAgenda() {
         System.out.println("Exibindo todas as tarefas da agenda:");
