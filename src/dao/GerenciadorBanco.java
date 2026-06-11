@@ -44,7 +44,8 @@ public class GerenciadorBanco {
     "ciclico INTEGER DEFAULT 0," +
     "id_agenda INTEGER NOT NULL," +
     "FOREIGN KEY (id_agenda) " +
-    " REFERENCES agenda (id)" +
+    " REFERENCES agenda (id)," +
+    "UNIQUE(id_agenda, horario)" +
     ");";
 
     try (Statement stmt = conn.createStatement()){
@@ -116,14 +117,14 @@ public class GerenciadorBanco {
     Agenda agendaAtual;
     String sql = "SELECT id, data " +
       "FROM agenda " +
-      "WHERE id = (?);";
+      "WHERE data = (?);";
 
     try (PreparedStatement pstmt = conn.prepareStatement(sql)){
       pstmt.setString(1, LocalDate.now().toString());
 
       ResultSet rs = pstmt.executeQuery();
       if (rs.next()) {
-        int idAgenda = rs.getInt(1);
+        int idAgenda = rs.getInt("id");
         LocalDate data = LocalDate.parse(rs.getString("data"));
 
         agendaAtual = new Agenda(idAgenda, data);
@@ -173,7 +174,7 @@ public class GerenciadorBanco {
       "VALUES (?, ?, ?, ?, ?, ?);";
 
     if (idAgenda == 0) {
-      System.err.println("Erro ao tentar registrar tarefa: identificador invalido");
+      System.err.println("Erro ao tentar registrar tarefa: identificador de agenda invalido");
       return false;
     }
 
