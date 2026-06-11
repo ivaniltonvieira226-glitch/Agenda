@@ -32,7 +32,7 @@ public class GerenciadorBanco {
   private void criarTabelas() {
     String agendaSql = "CREATE TABLE IF NOT EXISTS agenda(" +
     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-    "data TEXT NOT NULL" +
+    "data TEXT UNIQUE NOT NULL" +
     ");";
 
     String tarefaSql = "CREATE TABLE IF NOT EXISTS tarefa(" +
