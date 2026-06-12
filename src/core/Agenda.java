@@ -178,6 +178,10 @@ public class Agenda {
 
 
     public void mostrarAgenda() {
+        if (ultimo == null) {
+            System.err.println("Não foi possivel mostrar as tarefas da agenda pois ela está vazia");
+            return;
+        }
         System.out.println("Exibindo todas as tarefas da agenda:");
 
         int i = 0;
