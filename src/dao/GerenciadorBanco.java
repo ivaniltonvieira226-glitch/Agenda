@@ -119,12 +119,14 @@ public class GerenciadorBanco {
       "WHERE id_agenda = (" +
         "SELECT id " +
         "FROM agenda " +
-        "ORDER BY data DESC LIMIT 1), " +
-      "ciclico = 1";
+        "WHERE id != ?" +
+        "ORDER BY data DESC LIMIT 1) " +
+        "AND ciclico = 1;";
     
-    try (Statement stmt = conn.createStatement()) {
-      ResultSet rs = stmt.executeQuery(sql);
+    try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+      pstmt.setInt(1, agenda.getId());
 
+      ResultSet rs = pstmt.executeQuery();
       while (rs.next()) {
         int id = rs.getInt("id");
         String nome = rs.getString("nome");
@@ -181,6 +183,10 @@ public class GerenciadorBanco {
     if (agendaAtual.getId() == 0) {
       agendaAtual.setData(hoje);
       registrarAgenda(agendaAtual);
+      adicionarTarefasCiclicasRecentes(agendaAtual);
+    }
+    
+    if (agendaAtual.estaVazia()) {
       adicionarTarefasCiclicasRecentes(agendaAtual);
     }
 
