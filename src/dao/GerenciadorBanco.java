@@ -114,7 +114,7 @@ public class GerenciadorBanco {
   }
 
   private void adicionarTarefasCiclicasRecentes(Agenda agenda) {
-    String sql = "SELECT id, nome, descricao, horario, status, ciclico " +
+    String sql = "SELECT id, nome, descricao, horario, ciclico " +
       "FROM tarefa " +
       "WHERE id_agenda = (" +
         "SELECT id " +
@@ -132,10 +132,9 @@ public class GerenciadorBanco {
         String nome = rs.getString("nome");
         String descricao = rs.getString("descricao");
         LocalTime horario = LocalTime.parse(rs.getString("horario"));
-        StatusTarefa status = StatusTarefa.deString(rs.getString("status"));
         boolean ciclico = rs.getInt("ciclico") == 1;
 
-        Tarefa novaTarefa = new Tarefa(id, nome, descricao, horario, status, ciclico);
+        Tarefa novaTarefa = new Tarefa(id, nome, descricao, horario, StatusTarefa.Pendente, ciclico);
         agenda.adicionarTarefa(novaTarefa);
       }
 
