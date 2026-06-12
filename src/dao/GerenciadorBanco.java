@@ -175,9 +175,11 @@ public class GerenciadorBanco {
   }
 
   public Agenda montarAgendaAtual() {
-    Agenda agendaAtual = findAgendaByData(LocalDate.now());
+    LocalDate hoje = LocalDate.now();
+    Agenda agendaAtual = findAgendaByData(hoje);
     
     if (agendaAtual.getId() == 0) {
+      agendaAtual.setData(hoje);
       registrarAgenda(agendaAtual);
       findTarefasCiclicasRecentes(agendaAtual);
     }
