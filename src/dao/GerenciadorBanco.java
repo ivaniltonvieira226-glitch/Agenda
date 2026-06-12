@@ -113,7 +113,7 @@ public class GerenciadorBanco {
     }
   }
 
-  private void findTarefasCiclicasRecentes(Agenda agenda) {
+  private void adicionarTarefasCiclicasRecentes(Agenda agenda) {
     String sql = "SELECT id, nome, descricao, horario, status, ciclico " +
       "FROM tarefa " +
       "WHERE id_agenda = (" +
@@ -181,7 +181,7 @@ public class GerenciadorBanco {
     if (agendaAtual.getId() == 0) {
       agendaAtual.setData(hoje);
       registrarAgenda(agendaAtual);
-      findTarefasCiclicasRecentes(agendaAtual);
+      adicionarTarefasCiclicasRecentes(agendaAtual);
     }
 
     return agendaAtual;
