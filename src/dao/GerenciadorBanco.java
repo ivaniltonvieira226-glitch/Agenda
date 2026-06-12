@@ -113,6 +113,35 @@ public class GerenciadorBanco {
     }
   }
 
+  private void findTarefasCiclicasRecentes(Agenda agenda) {
+    String sql = "SELECT id, nome, descricao, horario, status, ciclico " +
+      "FROM tarefa " +
+      "WHERE id_agenda = (" +
+        "SELECT id " +
+        "FROM agenda " +
+        "ORDER BY data DESC LIMIT 1), " +
+      "ciclico = 1";
+    
+    try (Statement stmt = conn.createStatement()) {
+      ResultSet rs = stmt.executeQuery(sql);
+
+      while (rs.next()) {
+        int id = rs.getInt("id");
+        String nome = rs.getString("nome");
+        String descricao = rs.getString("descricao");
+        LocalTime horario = LocalTime.parse(rs.getString("horario"));
+        StatusTarefa status = StatusTarefa.deString(rs.getString("status"));
+        boolean ciclico = rs.getInt("ciclico") == 1;
+
+        Tarefa novaTarefa = new Tarefa(id, nome, descricao, horario, status, ciclico);
+        agenda.adicionarTarefa(novaTarefa);
+      }
+
+    } catch (SQLException e) {
+      System.err.println("Erro ao tentar buscar tarefas ciclicas recentes: " + e.getMessage());
+    }
+  }
+
   public boolean atualizarTarefa(int id, StatusTarefa status) {
     String sql = "UPDATE tarefa " +
       "SET status = ? " +
@@ -146,7 +175,17 @@ public class GerenciadorBanco {
   }
 
   public Agenda montarAgendaAtual() {
-    Agenda agendaAtual;
+    Agenda agendaAtual = findAgendaByData(LocalDate.now());
+    
+    if (agendaAtual.getId() == 0) {
+      registrarAgenda(agendaAtual);
+      findTarefasCiclicasRecentes(agendaAtual);
+    }
+
+    return agendaAtual;
+  }
+
+  private Agenda findAgendaByData(LocalDate data) {
     String sql = "SELECT id, data " +
       "FROM agenda " +
       "WHERE data = (?);";
@@ -157,24 +196,18 @@ public class GerenciadorBanco {
       ResultSet rs = pstmt.executeQuery();
       if (rs.next()) {
         int idAgenda = rs.getInt("id");
-        LocalDate data = LocalDate.parse(rs.getString("data"));
 
-        agendaAtual = new Agenda(idAgenda, data);
+        Agenda agendaEncontrada = new Agenda(idAgenda, data);
+        findTarefas(agendaEncontrada);
 
-        findTarefas(agendaAtual);
-        return agendaAtual;
+        return agendaEncontrada;
       }     
-
-      //registrar nova agenda
-      agendaAtual = new Agenda();
-      registrarAgenda(agendaAtual);
-      return agendaAtual;
     } catch (SQLException e) {
-      System.err.println("Erro ao tentar buscar agenda atual: " + e.getMessage());
+      System.err.println("Erro ao tentar buscar uma agenda: " + e.getMessage());
     }
-    System.err.println("Possivel erro lógico ao montar agenda atual");
-    return new Agenda(0, null);
+    return new Agenda(0);
   }
+
   //essa aqui vai ser privada quando acabarem os testes
   public void registrarAgenda(Agenda agenda) {
     String sql = "INSERT INTO agenda (data)" +
