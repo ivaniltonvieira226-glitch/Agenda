@@ -48,6 +48,7 @@ public class Agenda {
 
     public void atualizarTarefaAtual(StatusTarefa status) {
         this.tarefaAtual.setStatus(status);
+        if (status != StatusTarefa.Pendente) this.tarefaAtual = this.tarefaAtual.proxTarefa;
     }
 
     private boolean adicionarALista(Tarefa novaTarefa) {
