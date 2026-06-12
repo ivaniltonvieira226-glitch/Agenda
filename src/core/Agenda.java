@@ -50,6 +50,10 @@ public class Agenda {
         return tarefaAtual;
     }
 
+    public boolean estaVazia() {
+        return ultimo == null;
+    }
+
     public void atualizarTarefaAtual(StatusTarefa status) {
         this.tarefaAtual.setStatus(status);
         if (status != StatusTarefa.Pendente && tarefaAtual.proxTarefa != null) {
@@ -59,7 +63,7 @@ public class Agenda {
 
     private boolean adicionarALista(Tarefa novaTarefa) {
         // caso de primeira tarefa
-        if (ultimo == null) {
+        if (estaVazia()) {
             ultimo = novaTarefa;
             ultimo.proxTarefa = ultimo;
             ultimo.antTarefa = ultimo;
@@ -96,7 +100,7 @@ public class Agenda {
     }
 
     private boolean removerDaLista(Tarefa tarefa) {
-        if (ultimo == null) {
+        if (estaVazia()) {
             return false;
         }
 
@@ -127,7 +131,7 @@ public class Agenda {
         LocalTime agora = LocalTime.of(7, 30);
         
         //caso não haja nenhuma tarefa
-        if (ultimo == null) {
+        if (estaVazia()) {
             tarefaAtual = null;
             return;
         }
@@ -178,7 +182,7 @@ public class Agenda {
 
 
     public void mostrarAgenda() {
-        if (ultimo == null) {
+        if (estaVazia()) {
             System.err.println("Não foi possivel mostrar as tarefas da agenda pois ela está vazia");
             return;
         }
@@ -199,7 +203,7 @@ public class Agenda {
         int tarefasFalhas = 0;
         int tarefasConcluidas = 0;
         
-        if (ultimo == null) {
+        if (estaVazia()) {
             return new Relatorio();
         }
         
@@ -217,7 +221,7 @@ public class Agenda {
 
 
     public Tarefa[] getTarefas() {
-        if (ultimo == null) {
+        if (estaVazia()) {
             return new Tarefa[0];
         }
 
