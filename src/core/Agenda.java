@@ -107,7 +107,7 @@ public class Agenda {
         // única tarefa
         if (tarefa.proxTarefa == tarefa) {
             ultimo = null;
-            return false;
+            return true;
         }
 
         tarefa.antTarefa.proxTarefa = tarefa.proxTarefa;
@@ -116,9 +116,9 @@ public class Agenda {
         return true;
     }
 
-    public void removerTarefa(Tarefa tarefa) {
-        if (removerDaLista(tarefa)) {
-            if (tarefa == tarefaAtual) {
+    public void removerTarefa(Tarefa tarefaRemovida) {
+        if (removerDaLista(tarefaRemovida)) {
+            if (tarefaRemovida == tarefaAtual) {
                 definirTarefaAtual();
             }
             return;
