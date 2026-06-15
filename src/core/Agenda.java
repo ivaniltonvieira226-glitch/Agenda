@@ -66,10 +66,10 @@ public class Agenda {
             return false;
         }
 
-        // única tarefa
+        // única tarefa(fix: mudança de false para true)
         if (tarefa.proxTarefa == tarefa) {
             ultimo = null;
-            return false;
+            return true;
         }
 
         tarefa.antTarefa.proxTarefa = tarefa.proxTarefa;
@@ -106,8 +106,8 @@ public class Agenda {
     }
 
     public void definirTarefaAtual() {
-        // LocalTime agora = LocalTime.now();
-        LocalTime agora = LocalTime.of(7, 30);
+         LocalTime agora = LocalTime.now();
+        
         
         //caso não haja nenhuma tarefa
         if (ultimo == null) {
@@ -160,18 +160,26 @@ public class Agenda {
     }
 
     public void concluirTarefa() {
-        tarefaAtual.setStatus(StatusTarefa.Concluido);
-        tarefaAtual = tarefaAtual.proxTarefa;
+        if (tarefaAtual != null){
+            tarefaAtual.setStatus(StatusTarefa.Concluido);
+            tarefaAtual = tarefaAtual.proxTarefa;
+        }
+        
     }
 
     public void pularTarefa() {
-        tarefaAtual.setStatus(StatusTarefa.Pulado);
-        tarefaAtual = tarefaAtual.proxTarefa;
+        if (tarefaAtual != null){
+            tarefaAtual.setStatus(StatusTarefa.Pulado);
+            tarefaAtual = tarefaAtual.proxTarefa;
+        }
+        
     }
 
     public void falharTarefa() {
-        tarefaAtual.setStatus(StatusTarefa.Falhado);
-        tarefaAtual = tarefaAtual.proxTarefa;
+        if (tarefaAtual != null){
+            tarefaAtual.setStatus(StatusTarefa.Falhado);
+            tarefaAtual = tarefaAtual.proxTarefa;
+        }
     }
 
     public LocalDate getData() {
@@ -234,5 +242,21 @@ public class Agenda {
 
         return novaAgenda;
     }
+
+    //Exportar Lista em Texto(feat: UI)
+    public String exportarListaEmTexto() {
+        if (ultimo == null) return "Nenhuma tarefa cadastrada para hoje.";
+        
+        StringBuilder sb = new StringBuilder();
+        Tarefa node = ultimo.proxTarefa;
+        int i = 1;
+        while (true) {
+            sb.append(String.format("[%s] %d. %s (%s)\n", 
+                node.getHorario(), i++, node.getNome(), node.getStatus()));
+            if (node == ultimo) break;
+            node = node.proxTarefa;
+        }
+        return sb.toString();
+    } 
 
 }
