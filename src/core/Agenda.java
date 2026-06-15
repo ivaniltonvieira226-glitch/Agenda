@@ -106,7 +106,8 @@ public class Agenda {
     }
 
     public void definirTarefaAtual() {
-         LocalTime agora = LocalTime.now();
+         // LocalTime agora = LocalTime.now();
+         LocalTime agora = LocalTime.of(7, 30);
         
         
         //caso não haja nenhuma tarefa
@@ -160,25 +161,34 @@ public class Agenda {
     }
 
     public void concluirTarefa() {
-        if (tarefaAtual != null){
+        if (tarefaAtual.getStatus() == StatusTarefa.Pendente) {
             tarefaAtual.setStatus(StatusTarefa.Concluido);
             tarefaAtual = tarefaAtual.proxTarefa;
-        }
+    } 
+        else {
+            System.out.println("Ação negada: Esta tarefa já foi processada neste ciclo.");
+    }
         
     }
 
     public void pularTarefa() {
-        if (tarefaAtual != null){
+        if (tarefaAtual.getStatus() == StatusTarefa.Pendente){
             tarefaAtual.setStatus(StatusTarefa.Pulado);
             tarefaAtual = tarefaAtual.proxTarefa;
+        }
+        else{
+             System.out.println("Ação negada: Esta tarefa já foi processada neste ciclo.");
         }
         
     }
 
     public void falharTarefa() {
-        if (tarefaAtual != null){
+        if (tarefaAtual.getStatus() == StatusTarefa.Pendente){
             tarefaAtual.setStatus(StatusTarefa.Falhado);
             tarefaAtual = tarefaAtual.proxTarefa;
+        }
+        else{
+            System.out.println("Ação negada: Esta tarefa já foi processada neste ciclo.");
         }
     }
 
