@@ -261,12 +261,20 @@ public class AgendaUI extends JFrame {
     private void atualizarInterface() {
         Agenda agendaAtual = gerenciador.getAgenda();
 
-        // 1. Atualiza a label do topo
+        // 1. Atualiza a label do topo de forma ultra segura
+        String textoBanner = "🎉 Parabéns! Nenhuma tarefa pendente no momento.";
         try {
-            lblTarefaAtual.setText("📌 Próxima Atividade: " + agendaAtual.getTarefaAtual());
-        } catch (NullPointerException e) {
-            lblTarefaAtual.setText("🎉 Parabéns! Nenhuma tarefa pendente no momento.");
+            if (gerenciador.getAgenda() != null) {
+                String nomeTarefa = gerenciador.getAgenda().getTarefaAtual();
+                if (nomeTarefa != null && !nomeTarefa.trim().isEmpty()) {
+                    textoBanner = "📌 Próxima Atividade: " + nomeTarefa;
+                }
+            }
+        } catch (Exception e) {
+            // Caso ocorra qualquer erro de ponteiro na leitura, mantém o padrão seguro
+            textoBanner = "🎉 Parabéns! Nenhuma tarefa pendente no momento.";
         }
+        lblTarefaAtual.setText(textoBanner);
 
         // 2. Atualiza a lista usando o método que você adicionou
         txtListaTarefas.setText(agendaAtual.exportarListaEmTexto());

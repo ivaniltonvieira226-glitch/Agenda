@@ -25,7 +25,9 @@ public class Agenda {
 
 
     private boolean adicionarALista(Tarefa novaTarefa) {
-        // caso de primeira tarefa
+        if (novaTarefa == null) return false;
+
+        // Caso A: A lista está totalmente vazia
         if (ultimo == null) {
             ultimo = novaTarefa;
             ultimo.proxTarefa = ultimo;
@@ -33,32 +35,46 @@ public class Agenda {
             return true;
         }
 
-        // se a nova tarefa for depois da ultima
-        if (novaTarefa.getHorario().isAfter(ultimo.getHorario())) {
-            novaTarefa.proxTarefa = ultimo.proxTarefa;
+        // Caso B: A nova tarefa é ANTES ou IGUAL à primeira tarefa da lista
+        Tarefa primeira = ultimo.proxTarefa;
+        // Mudamos de: isBefore() para: !isAfter() -> Significa (Antes ou Igual)
+        if (!novaTarefa.getHorario().isAfter(primeira.getHorario())) {
+            novaTarefa.proxTarefa = primeira;
             novaTarefa.antTarefa = ultimo;
-            ultimo.proxTarefa.antTarefa = novaTarefa;
+            primeira.antTarefa = novaTarefa;
             ultimo.proxTarefa = novaTarefa;
-            ultimo = novaTarefa;
             return true;
         }
 
-        // caso geral
-        Tarefa atual = ultimo.proxTarefa;
-        while (true) {
-            if (novaTarefa.getHorario().isBefore(atual.getHorario())) {
-                novaTarefa.proxTarefa = atual;
-                novaTarefa.antTarefa = atual.antTarefa;
-                atual.antTarefa.proxTarefa = novaTarefa;
-                atual.antTarefa = novaTarefa;
+        // Caso C: A nova tarefa é DEPOIS ou IGUAL à última tarefa da lista
+        // Mudamos de: isAfter() para: !isBefore() -> Significa (Depois ou Igual)
+        if (!novaTarefa.getHorario().isBefore(ultimo.getHorario())) {
+            novaTarefa.proxTarefa = primeira;
+            novaTarefa.antTarefa = ultimo;
+            ultimo.proxTarefa = novaTarefa;
+            primeira.antTarefa = novaTarefa;
+            ultimo = novaTarefa; // A nova tarefa vira o novo 'ultimo'
+            return true;
+        }
+
+        // Caso Geral: Inserção ordenada no meio da lista circular
+        Tarefa node = primeira;
+        while (node != ultimo) {
+            // Se o horário da nova tarefa for menor ou igual ao nó atual, insere logo antes dele
+            if (!novaTarefa.getHorario().isAfter(node.getHorario())) {
+                Tarefa anterior = node.antTarefa;
+                
+                novaTarefa.proxTarefa = node;
+                novaTarefa.antTarefa = anterior;
+                anterior.proxTarefa = novaTarefa;
+                node.antTarefa = novaTarefa;
                 return true;
             }
-
-            if (atual == ultimo) break;
-            atual = atual.proxTarefa;
+            node = node.proxTarefa;
         }
-        // retorna falso se não encontrar intervalo para colocar a nova tarefa
+
         return false;
+
     }
 
     private boolean removerDaLista(Tarefa tarefa) {
@@ -106,8 +122,8 @@ public class Agenda {
     }
 
     public void definirTarefaAtual() {
-         // LocalTime agora = LocalTime.now();
-         LocalTime agora = LocalTime.of(7, 30);
+         LocalTime agora = LocalTime.now();
+         //LocalTime agora = LocalTime.of(7, 30);
         
         
         //caso não haja nenhuma tarefa
@@ -125,38 +141,81 @@ public class Agenda {
         //caso a ultima tarefa seja antes de "agora"
         if (ultimo.getHorario().isBefore(agora)) {
             tarefaAtual = ultimo;
+            // Se o horário dela já passou e está pendente, falhou
+            if(agora.isAfter(ultimo.getHorario()) && ultimo.getStatus() == StatusTarefa.Pendente){
+                ultimo.setStatus(StatusTarefa.Falhado);
+            }
+            return;
         }
+
+        
 
         Tarefa node = ultimo.proxTarefa;
 
         if (agora.isBefore(node.getHorario())) {
             tarefaAtual = node;
+            return;
         }
 
-        //caso geral
-        while (true) {
-            boolean depoisDoAtual = agora.isAfter(node.getHorario());
-            boolean antesDoProximo = agora.isBefore(node.proxTarefa.getHorario());
-
-            if (depoisDoAtual && antesDoProximo) {
-                while (node.getStatus() == StatusTarefa.Pulado) {
-                    node = node.proxTarefa;
-                    if (node == ultimo) break;
+        //O horário atual é DEPOIS da última tarefa do dia
+        if (agora.isAfter((ultimo.getHorario()))) {
+            tarefaAtual = ultimo;
+        }
+        else{
+            //caso geral: Encontrar em qual intervalo o "agora" se encaixa
+            Tarefa auxNode = ultimo.proxTarefa;
+            boolean encontrou = false;
+            while (auxNode != ultimo) {
+                // agora >= node e agora < proximo
+                if (!agora.isBefore(auxNode.getHorario()) && agora.isBefore(auxNode.proxTarefa.getHorario())) {
+                    tarefaAtual = auxNode;
+                    encontrou = true;
+                    break;
                 }
-                tarefaAtual = node;
-                break;
+                auxNode = auxNode.proxTarefa;
             }
 
-            if (node.getStatus() == StatusTarefa.Pendente) node.setStatus(StatusTarefa.Falhado);
+            // Se por algum motivo de decolagem de ponteiros não encaixar no meio,
+            // garante que a tarefaAtual não fique flutuando como null
+            if (!encontrou && tarefaAtual == null) {
+                tarefaAtual = auxNode;
+            }
+        }
 
-            if (node == ultimo) break;
-            node = node.proxTarefa;
+        
+    
+        // Se a tarefa do momento foi pulada ou concluída, avança para a próxima que estiver pendente
+        Tarefa salvaguarda = tarefaAtual;
+        while (tarefaAtual.getStatus() != StatusTarefa.Pendente) {
+            tarefaAtual = tarefaAtual.proxTarefa;
+            // Evita loop infinito se todas as tarefas do dia já mudaram de status
+            if (tarefaAtual == salvaguarda) break; 
+        }
+
+        // VARREDURA DE FALHAS: Agora que a tarefaAtual está definida, 
+        // rodamos a lista para falhar APENAS o que ficou no passado cronológico
+        Tarefa aux = ultimo.proxTarefa;
+        while (true) {
+            if (agora.isAfter(aux.getHorario()) && aux.getStatus() == StatusTarefa.Pendente) {
+                // Só falha se não for a própria tarefa atual do momento
+                if (aux != tarefaAtual) {
+                    aux.setStatus(StatusTarefa.Falhado);
+                }
+            }
+
+
+            if (aux == ultimo) break;
+            aux = aux.proxTarefa;
         }
     }
 
     public void adicionarTarefa(Tarefa novaTarefa) {
         if (adicionarALista(novaTarefa)) {
             definirTarefaAtual();
+            // Força uma garantia caso seja a primeira tarefa do dia
+            if (tarefaAtual == null && ultimo != null) {
+                tarefaAtual = ultimo;
+            }
         }
     }
 
@@ -197,6 +256,15 @@ public class Agenda {
     }
 
     public String getTarefaAtual() {
+        // Se a tarefaAtual estiver nula por atraso de inicialização, 
+        // mas a lista não estiver vazia, usa o primeiro elemento disponível (ultimo.proxTarefa)
+        if (tarefaAtual == null) {
+            if (ultimo != null) {
+                tarefaAtual = ultimo.proxTarefa; // Força o ponteiro para a primeira do dia
+                return tarefaAtual.getNome();
+            }
+            return null; // Lista realmente vazia
+        }
         return tarefaAtual.getNome();
     }
 
