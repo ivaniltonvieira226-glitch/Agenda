@@ -5,7 +5,6 @@ import java.time.LocalTime;
 
 public class Agenda {
     private int id;
-    private Gerenciador gerenciador;
     private Tarefa ultimo;
     private Tarefa tarefaAtual;
     private LocalDate data;
@@ -123,9 +122,6 @@ public class Agenda {
 
     public void removerTarefa(Tarefa tarefaRemovida) {
         if (removerDaLista(tarefaRemovida)) {
-            if (tarefaRemovida == tarefaAtual) {
-                definirTarefaAtual();
-            }
             return;
         }
         System.out.println("nenhuma tarefa foi removida");
@@ -147,14 +143,6 @@ public class Agenda {
             return;
         }
 
-        //caso a ultima tarefa seja antes de "agora"
-        if (ultimo.getHorario().isBefore(agora)) {
-            tarefaAtual = ultimo;
-            System.out.println(tarefaAtual.antTarefa.getNome());
-            tarefaAtual.antTarefa.setStatus(StatusTarefa.Falhado);
-            return;
-        }
-
         Tarefa node = ultimo.proxTarefa;
 
         // Se for o primeiro horário
@@ -163,24 +151,45 @@ public class Agenda {
             return;
         }
 
-        //caso geral
+        //caso a ultima tarefa seja antes de "agora" - todas as tarefas passaram
+        if (ultimo.getHorario().isBefore(agora)) {
+            tarefaAtual = ultimo;
+            System.out.println(tarefaAtual.antTarefa.getNome());
+            tarefaAtual.antTarefa.setStatus(StatusTarefa.Falhado);
+            return;
+        }
+
+        //caso geral - procurar a primeira tarefa com status Pendente entre agora
         while (true) {
             boolean depoisDoAtual = agora.isAfter(node.getHorario());
             boolean antesDoProximo = agora.isBefore(node.proxTarefa.getHorario());
 
             if (depoisDoAtual && antesDoProximo) {
-                while (node.getStatus() == StatusTarefa.Pulado) {
-                    node = node.proxTarefa;
-                    if (node == ultimo) break;
+                // Encontrou o intervalo de tempo, agora procura a primeira tarefa Pendente
+                Tarefa candidata = node;
+                while (candidata.getStatus() != StatusTarefa.Pendente) {
+                    candidata = candidata.proxTarefa;
+                    if (candidata == node) {
+                        // Completou um ciclo sem encontrar Pendente, define o primeiro do intervalo
+                        break;
+                    }
                 }
-                tarefaAtual = node;
-                tarefaAtual.antTarefa.setStatus(StatusTarefa.Falhado);
-                break;
+                tarefaAtual = candidata;
+                // Marca tarefas anteriores ao intervalo como falhadas
+                Tarefa anterior = tarefaAtual.antTarefa;
+                while (anterior != tarefaAtual && anterior.getStatus() == StatusTarefa.Pendente) {
+                    anterior.setStatus(StatusTarefa.Falhado);
+                    anterior = anterior.antTarefa;
+                }
+                return;
             }
 
             if (node == ultimo) break;
             node = node.proxTarefa;
         }
+        
+        // Se chegou aqui, nenhuma tarefa foi definida (edge case)
+        tarefaAtual = ultimo.proxTarefa;
     }
 
     public void adicionarTarefa(Tarefa novaTarefa) {
