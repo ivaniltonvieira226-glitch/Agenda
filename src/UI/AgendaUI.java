@@ -192,7 +192,7 @@ public class AgendaUI extends JFrame {
                 String nome = txtNomeTarefa.getText();
 
                 if (nome == null || nome.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Você deve inserir um nome para a tarefa", "Erro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Você deve inserir um nome para a tarefa.", "Erro", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -204,7 +204,7 @@ public class AgendaUI extends JFrame {
                 var foiAdicionada = gerenciador.adicionarTarefa(nova);
 
                 if (!foiAdicionada) {
-                    JOptionPane.showMessageDialog(this, "Não é possível adicionar uma tarefa para um horário de uma tarefa pré-existente. Mude o horário da tarefa.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "Não é possível adicionar uma tarefa com um horário de uma tarefa pré-existente. Mude o horário da tarefa.", "Erro", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -297,12 +297,10 @@ public class AgendaUI extends JFrame {
                     }
                 } else {
                     textoBanner = "🎉 Parabéns! Você completou todas as tarefas do dia!";
-                    temTarefaPendente = false;
                 }
             }
         } catch (Exception e) {
             textoBanner = "🎉 Parabéns! Nenhuma tarefa pendente no momento.";
-            temTarefaPendente = false;
         }
         lblTarefaAtual.setText(textoBanner);
 
@@ -335,10 +333,7 @@ public class AgendaUI extends JFrame {
         }
 
         try {
-            // Acesso via reflexão ao campo privado 'ultimo'
-            java.lang.reflect.Field fieldUltimo = agenda.getClass().getDeclaredField("ultimo");
-            fieldUltimo.setAccessible(true);
-            Tarefa ultimo = (Tarefa) fieldUltimo.get(agenda);
+            var ultimo = agenda.getUltimo();
 
             if (ultimo != null) {
                 Tarefa atual = ultimo.proxTarefa;
@@ -367,10 +362,7 @@ public class AgendaUI extends JFrame {
         } else {
             Tarefa primeira = null;
             try {
-                // Acesso via reflexão ao campo privado 'ultimo'
-                java.lang.reflect.Field fieldUltimo = agenda.getClass().getDeclaredField("ultimo");
-                fieldUltimo.setAccessible(true);
-                Tarefa ultimo = (Tarefa) fieldUltimo.get(agenda);
+                var ultimo = agenda.getUltimo();
                 if (ultimo != null) {
                     primeira = ultimo.proxTarefa;
                 }
