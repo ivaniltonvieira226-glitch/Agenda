@@ -205,10 +205,14 @@ public class Agenda {
         tarefaAtual = ultimo.proxTarefa;
     }
 
-    public void adicionarTarefa(Tarefa novaTarefa) {
-        if (adicionarALista(novaTarefa)) {
+    public boolean adicionarTarefa(Tarefa novaTarefa) {
+        var foiAdicionada = adicionarALista(novaTarefa);
+
+        if (foiAdicionada) {
             definirTarefaAtual();
         }
+
+        return foiAdicionada;
     }
 
     // Método para adicionar tarefa sem definir a tarefa atual (usado ao carregar do banco)

@@ -202,9 +202,9 @@ public class AgendaUI extends JFrame {
         JScrollPane scrollLista = new JScrollPane(painelTarefasContainer);
         scrollLista.setBorder(BorderFactory.createEmptyBorder());
         scrollLista.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        
+
         painelLista.add(scrollLista, BorderLayout.CENTER);
-        
+
         // Guardar referência para atualizar depois
         this.painelTarefasContainer = painelTarefasContainer;
 
@@ -216,15 +216,22 @@ public class AgendaUI extends JFrame {
             try {
                 String nome = txtNomeTarefa.getText();
 
-                // todo: vamos ver se melhora isso aqui
-                if (nome == null || nome.isEmpty()) return;
+                if (nome == null || nome.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Você deve inserir um nome para a tarefa", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
                 String desc = txtDescricaoTarefa.getText();
                 LocalTime horario = LocalTime.parse(txtHorarioTarefa.getText(), timeFormatter);
                 boolean ciclico = chkCiclico.isSelected();
 
                 Tarefa nova = new Tarefa(nome, desc, horario, ciclico);
-                gerenciador.adicionarTarefa(nova);
+                var foiAdicionada = gerenciador.adicionarTarefa(nova);
+
+                if (!foiAdicionada) {
+                    JOptionPane.showMessageDialog(this, "Não é possível adicionar uma tarefa para um horário de uma tarefa pré-existente. Mude o horário da tarefa.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
 
                 txtNomeTarefa.setText("");
                 txtDescricaoTarefa.setText("");
@@ -336,7 +343,7 @@ public class AgendaUI extends JFrame {
             temTarefaPendente = false;
         }
         lblTarefaAtual.setText(textoBanner);
-        
+
         // Ativar/desativar botões conforme houver tarefa pendente
         btnConcluir.setEnabled(temTarefaPendente);
         btnPular.setEnabled(temTarefaPendente);
@@ -374,7 +381,7 @@ public class AgendaUI extends JFrame {
             java.lang.reflect.Field fieldUltimo = agenda.getClass().getDeclaredField("ultimo");
             fieldUltimo.setAccessible(true);
             Tarefa ultimo = (Tarefa) fieldUltimo.get(agenda);
-            
+
             if (ultimo != null) {
                 Tarefa atual = ultimo.proxTarefa;
                 do {
