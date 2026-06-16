@@ -245,7 +245,7 @@ public class AgendaUI extends JFrame {
         painelBaixo.setBackground(COR_CARD);
         painelBaixo.setBorder(criarBordaCustomizada(" Histórico de Produtividade "));
 
-        JButton btnFinalizarDia = criarBotaoEstilizado("🏁 Finalizar Ciclo do Dia e Migrar Cíclicas", COR_VERDE_SUCESSO);
+        JButton btnFinalizarDia = criarBotaoEstilizado("🏁 Finalizar Ciclo do Dia", COR_VERDE_SUCESSO);
         btnFinalizarDia.setFont(new Font("Segoe UI", Font.BOLD, 14));
         painelBaixo.add(btnFinalizarDia, BorderLayout.NORTH);
 
@@ -260,7 +260,7 @@ public class AgendaUI extends JFrame {
         painelBaixo.add(scrollHist, BorderLayout.CENTER);
 
         btnFinalizarDia.addActionListener(e -> {
-//            gerenciador.finalizarDia();
+            gerenciador.finalizarDia();
             JOptionPane.showMessageDialog(this, "Relatório arquivado! Nova agenda gerada com sucesso.");
             atualizarInterface();
         });

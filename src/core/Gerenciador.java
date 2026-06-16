@@ -1,6 +1,8 @@
 package core;
 
 import dao.GerenciadorBanco;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class Gerenciador {
   
@@ -23,6 +25,10 @@ public class Gerenciador {
   }
 
   public void adicionarTarefa(Tarefa tarefa) {
+    if (tarefa.getHorario().isBefore(LocalTime.now()) && tarefa.getStatus() == StatusTarefa.Pendente) {
+        tarefa.setStatus(StatusTarefa.Falhado);
+    }
+
     if (dao.registrarTarefa(tarefa, agenda.getId())) {
       agenda.adicionarTarefa(tarefa);
       agenda.definirTarefaAtual();
@@ -46,6 +52,36 @@ public class Gerenciador {
       return;
     }
     System.err.println("Não foi possivel atualizar a tarefa atual");
+  }
+
+  public void finalizarDia() {
+    // 1. Gerar relatório da agenda atual (já salvo na base por status atualizado)
+    Relatorio relatorio = agenda.gerarRelatorio();
+    historico.adicionarRelatorio(relatorio);
+    
+    // 2. Criar nova agenda para amanhã
+    LocalDate amanha = LocalDate.now().plusDays(1);
+    Agenda novaAgenda = new Agenda(amanha);
+    dao.registrarAgenda(novaAgenda);
+    
+    // 3. Migrar tarefas cíclicas da agenda atual para a nova
+    Tarefa[] tarefas = agenda.getTarefas();
+    for (Tarefa tarefa : tarefas) {
+      if (tarefa.isCiclico()) {
+        // Criar cópia da tarefa cíclica com status Pendente
+        Tarefa tarefaCopia = tarefa.copiarTarefa();
+        if (dao.registrarTarefa(tarefaCopia, novaAgenda.getId())) {
+          novaAgenda.adicionarTarefa(tarefaCopia);
+        }
+      }
+    }
+    
+    novaAgenda.definirTarefaAtual();
+    
+    // 4. Atualizar a agenda atual para a nova
+    this.agenda = novaAgenda;
+    
+    System.out.println("Ciclo do dia finalizado com sucesso!");
   }
 
   private Historico buscarHistorico() {
