@@ -34,6 +34,7 @@ public class Gerenciador {
   public void removerTarefa(Tarefa tarefa) {
     if (dao.removerTarefa(tarefa.getId())) {
       agenda.removerTarefa(tarefa);
+      agenda.definirTarefaAtual();
       return;
     }
     System.err.println("Não foi possivel remover " + tarefa.getNome() + " da agenda, reinicie o aplicativo e tente novamente");
