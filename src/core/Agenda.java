@@ -130,8 +130,7 @@ public class Agenda {
     }
 
     public void definirTarefaAtual() {
-         LocalTime agora = LocalTime.now();
-//        LocalTime agora = LocalTime.of(7, 30);
+        LocalTime agora = LocalTime.now();
         
         //caso não haja nenhuma tarefa
         if (estaVazia()) {
@@ -280,22 +279,6 @@ public class Agenda {
             node = node.proxTarefa;
         }
         return tarefas;
-    }
-
-    //Exportar Lista em Texto(feat: UI)
-    public String exportarListaEmTexto() {
-        if (ultimo == null) return "Nenhuma tarefa cadastrada para hoje.";
-
-        StringBuilder sb = new StringBuilder();
-        Tarefa node = ultimo.proxTarefa;
-        int i = 1;
-        while (true) {
-            sb.append(String.format("[%s] %d. %s (%s)\n",
-                    node.getHorario(), i++, node.getNome(), node.getStatus()));
-            if (node == ultimo) break;
-            node = node.proxTarefa;
-        }
-        return sb.toString();
     }
 
 }
