@@ -15,7 +15,8 @@ public class AgendaUI extends JFrame {
 
     // Componentes da Tela
     private JLabel lblTarefaAtual;
-    private JTextArea txtListaTarefas;
+    private JPanel painelTarefasContainer;
+    private JButton btnConcluir, btnPular;
     private JTextField txtNomeTarefa, txtDescricaoTarefa, txtHorarioTarefa;
     private JCheckBox chkCiclico;
     private JTextArea txtHistorico;
@@ -79,16 +80,14 @@ public class AgendaUI extends JFrame {
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         painelBotoes.setBackground(COR_CARD);
 
-        JButton btnConcluir = criarBotaoEstilizado("Concluir ✅", new Color(40, 167, 69));
-        JButton btnPular = criarBotaoEstilizado("Pular ↩️", new Color(255, 193, 7));
-//        JButton btnFalhar = criarBotaoEstilizado("Falhar ❌", new Color(220, 53, 69));
+        btnConcluir = criarBotaoEstilizado("Concluir ✅", new Color(40, 167, 69));
+        btnPular = criarBotaoEstilizado("Pular ↩️", new Color(255, 193, 7));
 
         // Ajuste fino na cor do texto do botão amarelo para leitura
         btnPular.setForeground(Color.BLACK);
 
         painelBotoes.add(btnConcluir);
         painelBotoes.add(btnPular);
-//        painelBotoes.add(btnFalhar);
         painelTopo.add(painelBotoes, BorderLayout.EAST);
 
         // Ações
@@ -100,10 +99,6 @@ public class AgendaUI extends JFrame {
             gerenciador.atualizarTarefaAtual(StatusTarefa.Pulado);
             atualizarInterface();
         });
-//        btnFalhar.addActionListener(e -> {
-//            gerenciador.atualizarTarefaAtual(StatusTarefa.Falhado);
-//            atualizarInterface();
-//        });
 
         return painelTopo;
     }
@@ -187,7 +182,7 @@ public class AgendaUI extends JFrame {
         gbc.gridwidth = 2;
         gbc.weightx = 1.0;
         gbc.insets = new Insets(20, 12, 10, 12);
-        JButton btnAdicionar = criarBotaoEstilizado("Adicionar na Lista Dupla", COR_AZUL_PRINCIPAL);
+        JButton btnAdicionar = criarBotaoEstilizado("Adicionar a Lista", COR_AZUL_PRINCIPAL);
         painelForm.add(btnAdicionar, gbc);
 
         painelFormWrapper.add(painelForm);
@@ -195,17 +190,23 @@ public class AgendaUI extends JFrame {
         // --- DIREITA: Lista de Tarefas (Ocupa o resto do espaço dinamicamente) ---
         JPanel painelLista = new JPanel(new BorderLayout());
         painelLista.setBackground(COR_CARD);
-        painelLista.setBorder(criarBordaCustomizada(" Lista Ordenada de Hoje "));
+        painelLista.setBorder(criarBordaCustomizada(" Lista de Hoje "));
 
-        txtListaTarefas = new JTextArea();
-        txtListaTarefas.setEditable(false);
-        txtListaTarefas.setFont(new Font("Consolas", Font.PLAIN, 14)); // Letra mono-espaçada clássica para listas
-        txtListaTarefas.setForeground(COR_TEXTO_PADRAO);
-        txtListaTarefas.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Painel contêiner para as tarefas com BoxLayout para layout vertical
+        JPanel painelTarefasContainer = new JPanel();
+        painelTarefasContainer.setLayout(new BoxLayout(painelTarefasContainer, BoxLayout.Y_AXIS));
+        painelTarefasContainer.setBackground(COR_CARD);
+        painelTarefasContainer.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JScrollPane scrollLista = new JScrollPane(txtListaTarefas);
+        // ScrollPane para as tarefas
+        JScrollPane scrollLista = new JScrollPane(painelTarefasContainer);
         scrollLista.setBorder(BorderFactory.createEmptyBorder());
+        scrollLista.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        
         painelLista.add(scrollLista, BorderLayout.CENTER);
+        
+        // Guardar referência para atualizar depois
+        this.painelTarefasContainer = painelTarefasContainer;
 
         painelCentro.add(painelFormWrapper, BorderLayout.WEST);
         painelCentro.add(painelLista, BorderLayout.CENTER);
@@ -307,23 +308,41 @@ public class AgendaUI extends JFrame {
     private void atualizarInterface() {
         Agenda agendaAtual = gerenciador.getAgenda();
 
-        // 1. Atualiza a label do topo de forma ultra segura
+        // 1. Atualiza a label do topo e verifica se há tarefa pendente para ativar botões
         String textoBanner = "🎉 Parabéns! Nenhuma tarefa pendente no momento.";
+        boolean temTarefaPendente = false;
         try {
             if (gerenciador.getAgenda() != null) {
-                String nomeTarefa = gerenciador.getAgenda().getTarefaAtual().getNome();
-                if (nomeTarefa != null && !nomeTarefa.trim().isEmpty()) {
-                    textoBanner = "📌 Próxima Atividade: " + nomeTarefa;
+                // Verifica se há alguma tarefa pendente na agenda
+                if (temTarefasPendentes(agendaAtual)) {
+                    Tarefa tarefaAtual = gerenciador.getAgenda().getTarefaAtual();
+                    if (tarefaAtual != null) {
+                        String nomeTarefa = tarefaAtual.getNome();
+                        if (nomeTarefa != null && !nomeTarefa.trim().isEmpty()) {
+                            textoBanner = "📌 Próxima Atividade: " + nomeTarefa;
+                            // Só ativar botões se a tarefa estiver com status Pendente
+                            temTarefaPendente = (tarefaAtual.getStatus() == StatusTarefa.Pendente);
+                        }
+                    }
+                } else {
+                    // Nenhuma tarefa pendente - mostrar mensagem de parabéns
+                    textoBanner = "🎉 Parabéns! Você completou todas as tarefas do dia!";
+                    temTarefaPendente = false;
                 }
             }
         } catch (Exception e) {
             // Caso ocorra qualquer erro de ponteiro na leitura, mantém o padrão seguro
             textoBanner = "🎉 Parabéns! Nenhuma tarefa pendente no momento.";
+            temTarefaPendente = false;
         }
         lblTarefaAtual.setText(textoBanner);
+        
+        // Ativar/desativar botões conforme houver tarefa pendente
+        btnConcluir.setEnabled(temTarefaPendente);
+        btnPular.setEnabled(temTarefaPendente);
 
-        // 2. Atualiza a lista usando o método que você adicionou
-        txtListaTarefas.setText(agendaAtual.exportarListaEmTexto());
+        // 2. Atualiza a lista renderizando os componentes das tarefas
+        atualizarListaTarefas(agendaAtual);
 
         // 3. Atualiza o Histórico
         StringBuilder sbHist = new StringBuilder();
@@ -342,5 +361,199 @@ public class AgendaUI extends JFrame {
             }
         }
         txtHistorico.setText(sbHist.toString());
+    }
+
+    // Método auxiliar para verificar se há tarefas pendentes na agenda
+    private boolean temTarefasPendentes(Agenda agenda) {
+        if (agenda == null || agenda.estaVazia()) {
+            return false;
+        }
+
+        try {
+            // Usar reflexão para acessar o campo privado 'ultimo'
+            java.lang.reflect.Field fieldUltimo = agenda.getClass().getDeclaredField("ultimo");
+            fieldUltimo.setAccessible(true);
+            Tarefa ultimo = (Tarefa) fieldUltimo.get(agenda);
+            
+            if (ultimo != null) {
+                Tarefa atual = ultimo.proxTarefa;
+                do {
+                    if (atual.getStatus() == StatusTarefa.Pendente) {
+                        return true;
+                    }
+                    atual = atual.proxTarefa;
+                } while (atual != ultimo.proxTarefa);
+            }
+        } catch (Exception e) {
+            // Fallback
+            return false;
+        }
+
+        return false;
+    }
+
+    // Método para atualizar a lista de tarefas renderizando painéis individuais
+    private void atualizarListaTarefas(Agenda agenda) {
+        painelTarefasContainer.removeAll();
+
+        if (agenda == null || agenda.estaVazia()) {
+            JLabel lblVazio = new JLabel("Nenhuma tarefa adicionada ainda");
+            lblVazio.setFont(new Font("Segoe UI", Font.ITALIC, 13));
+            lblVazio.setForeground(new Color(150, 150, 150));
+            painelTarefasContainer.add(lblVazio);
+        } else {
+            // Percorrer a lista ligada circular de tarefas sempre começando PELA PRIMEIRA (ordenada por horário)
+            // Em uma lista circular: ultimo.proxTarefa = primeiro elemento
+            Tarefa primeira = null;
+            try {
+                // Usar reflexão para acessar o campo privado 'ultimo'
+                java.lang.reflect.Field fieldUltimo = agenda.getClass().getDeclaredField("ultimo");
+                fieldUltimo.setAccessible(true);
+                Tarefa ultimo = (Tarefa) fieldUltimo.get(agenda);
+                if (ultimo != null) {
+                    primeira = ultimo.proxTarefa; // Primeira tarefa em ordem de horário
+                }
+            } catch (Exception e) {
+                // Fallback: usar tarefa atual
+                primeira = agenda.getTarefaAtual();
+            }
+
+            if (primeira != null) {
+                Tarefa atual = primeira;
+                do {
+                    painelTarefasContainer.add(criarPainelTarefa(atual));
+                    painelTarefasContainer.add(Box.createVerticalStrut(8));
+                    atual = atual.proxTarefa;
+                } while (atual != primeira);
+            }
+        }
+
+        // Adicionar espaço vazio no final para melhor visualização
+        painelTarefasContainer.add(Box.createVerticalGlue());
+
+        painelTarefasContainer.revalidate();
+        painelTarefasContainer.repaint();
+    }
+
+    // Método para criar um painel visual para cada tarefa
+    private JPanel criarPainelTarefa(Tarefa tarefa) {
+        JPanel painelTarefa = new JPanel(new GridBagLayout());
+        painelTarefa.setBackground(COR_CARD);
+        painelTarefa.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(COR_BORDAS, 1, true),
+                BorderFactory.createEmptyBorder(10, 12, 10, 12)
+        ));
+        painelTarefa.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 0, 0, 8);
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.fill = GridBagConstraints.BOTH;
+
+        // Painel esquerdo: Info principal (nome, descrição, horário) - OCUPA MAIS ESPAÇO
+        JPanel painelInfoEsquerda = new JPanel();
+        painelInfoEsquerda.setLayout(new BoxLayout(painelInfoEsquerda, BoxLayout.Y_AXIS));
+        painelInfoEsquerda.setBackground(COR_CARD);
+
+        // Nome da tarefa
+        JLabel lblNome = new JLabel(tarefa.getNome());
+        lblNome.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblNome.setForeground(COR_TEXTO_PADRAO);
+        painelInfoEsquerda.add(lblNome);
+
+        // Descrição com limite de linhas para não crescer demais
+        String descricao = tarefa.getDescricao();
+        if (descricao.length() > 60) {
+            descricao = descricao.substring(0, 60) + "...";
+        }
+        JLabel lblDesc = new JLabel(descricao);
+        lblDesc.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblDesc.setForeground(new Color(100, 110, 120));
+        painelInfoEsquerda.add(lblDesc);
+
+        // Horário
+        JLabel lblHora = new JLabel("⏰ " + tarefa.getHorario().format(timeFormatter));
+        lblHora.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblHora.setForeground(new Color(120, 130, 140));
+        painelInfoEsquerda.add(lblHora);
+
+        // Adicionar ao painel principal na esquerda com peso 1 para crescer
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        gbc.insets = new Insets(0, 0, 0, 8);
+        painelTarefa.add(painelInfoEsquerda, gbc);
+
+        // Painel direito: Status, tags e botão de remover - NÃO CRESCE
+        JPanel painelDireita = new JPanel();
+        painelDireita.setLayout(new BoxLayout(painelDireita, BoxLayout.Y_AXIS));
+        painelDireita.setBackground(COR_CARD);
+
+        // Tag de status
+        JLabel lblStatus = criarLabelStatus(tarefa.getStatus());
+        painelDireita.add(lblStatus);
+        painelDireita.add(Box.createVerticalStrut(3));
+
+        // Tag cíclica se aplicável
+        if (tarefa.isCiclico()) {
+            JLabel lblCiclica = new JLabel("🔄 Cíclica");
+            lblCiclica.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            lblCiclica.setForeground(new Color(255, 193, 7));
+            painelDireita.add(lblCiclica);
+            painelDireita.add(Box.createVerticalStrut(3));
+        }
+
+        // Botão de remover tarefa
+        JButton btnRemover = criarBotaoEstilizado("🗑️ Remover", new Color(220, 53, 69));
+        btnRemover.setFont(new Font("Segoe UI", Font.BOLD, 11));
+        btnRemover.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        btnRemover.addActionListener(e -> {
+            gerenciador.removerTarefa(tarefa);
+            atualizarInterface();
+        });
+        painelDireita.add(btnRemover);
+        painelDireita.add(Box.createVerticalGlue());
+
+        // Adicionar painel direito com peso 0 (não cresce)
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.weightx = 0.0;
+        gbc.weighty = 0.0;
+        gbc.insets = new Insets(0, 0, 0, 0);
+        gbc.anchor = GridBagConstraints.NORTHEAST;
+        painelTarefa.add(painelDireita, gbc);
+
+        return painelTarefa;
+    }
+
+    // Método auxiliar para criar label de status com cores
+    private JLabel criarLabelStatus(StatusTarefa status) {
+        String texto = "";
+        Color cor = Color.GRAY;
+
+        switch (status) {
+            case Pendente:
+                texto = "⏳ Pendente";
+                cor = new Color(255, 193, 7);
+                break;
+            case Concluido:
+                texto = "✅ Concluído";
+                cor = new Color(39, 174, 96);
+                break;
+            case Pulado:
+                texto = "↩️ Pulado";
+                cor = new Color(52, 152, 219);
+                break;
+            case Falhado:
+                texto = "❌ Falhado";
+                cor = new Color(231, 76, 60);
+                break;
+        }
+
+        JLabel lbl = new JLabel(texto);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setForeground(cor);
+        return lbl;
     }
 }
