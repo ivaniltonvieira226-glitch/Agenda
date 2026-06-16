@@ -25,6 +25,7 @@ public class Gerenciador {
   public void adicionarTarefa(Tarefa tarefa) {
     if (dao.registrarTarefa(tarefa, agenda.getId())) {
       agenda.adicionarTarefa(tarefa);
+      agenda.definirTarefaAtual();
       return;
     }
     System.err.println("Não foi possivel adicionar " + tarefa.getNome() + " a agenda, reinicia o aplicativo e tente novamente");

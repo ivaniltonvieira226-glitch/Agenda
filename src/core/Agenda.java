@@ -5,6 +5,7 @@ import java.time.LocalTime;
 
 public class Agenda {
     private int id;
+    private Gerenciador gerenciador;
     private Tarefa ultimo;
     private Tarefa tarefaAtual;
     private LocalDate data;
@@ -62,7 +63,7 @@ public class Agenda {
     }
 
     private boolean adicionarALista(Tarefa novaTarefa) {
-        // caso de primeira tarefa
+        // caso de lista vazia
         if (estaVazia()) {
             ultimo = novaTarefa;
             ultimo.proxTarefa = ultimo;
@@ -72,6 +73,7 @@ public class Agenda {
 
         // se a nova tarefa for depois da ultima
         if (novaTarefa.getHorario().isAfter(ultimo.getHorario())) {
+            System.out.println(novaTarefa.getNome() + " SERÁ ADICIONADA NO FINAL");
             novaTarefa.proxTarefa = ultimo.proxTarefa;
             novaTarefa.antTarefa = ultimo;
             ultimo.proxTarefa.antTarefa = novaTarefa;
@@ -84,6 +86,9 @@ public class Agenda {
         Tarefa atual = ultimo.proxTarefa;
         while (true) {
             if (novaTarefa.getHorario().isBefore(atual.getHorario())) {
+                var agora = LocalTime.now();
+                if (agora.isAfter(novaTarefa.getHorario())) novaTarefa.setStatus(StatusTarefa.Falhado);
+
                 novaTarefa.proxTarefa = atual;
                 novaTarefa.antTarefa = atual.antTarefa;
                 atual.antTarefa.proxTarefa = novaTarefa;
@@ -127,8 +132,8 @@ public class Agenda {
     }
 
     public void definirTarefaAtual() {
-        // LocalTime agora = LocalTime.now();
-        LocalTime agora = LocalTime.of(7, 30);
+         LocalTime agora = LocalTime.now();
+//        LocalTime agora = LocalTime.of(7, 30);
         
         //caso não haja nenhuma tarefa
         if (estaVazia()) {
@@ -136,26 +141,31 @@ public class Agenda {
             return;
         }
 
-        //caso haja haja apenas uma tarefa
+        // caso haja apenas uma tarefa
         if (ultimo.proxTarefa == ultimo) {
             tarefaAtual = ultimo;
             return;
         }
 
         //caso a ultima tarefa seja antes de "agora"
-        if (!agora.isBefore(ultimo.getHorario())) {
+        if (ultimo.getHorario().isBefore(agora)) {
             tarefaAtual = ultimo;
+            System.out.println(tarefaAtual.antTarefa.getNome());
+            tarefaAtual.antTarefa.setStatus(StatusTarefa.Falhado);
+            return;
         }
 
         Tarefa node = ultimo.proxTarefa;
 
+        // Se for o primeiro horário
         if (agora.isBefore(node.getHorario())) {
             tarefaAtual = node;
+            return;
         }
 
         //caso geral
         while (true) {
-            boolean depoisDoAtual = !agora.isBefore(node.getHorario());
+            boolean depoisDoAtual = agora.isAfter(node.getHorario());
             boolean antesDoProximo = agora.isBefore(node.proxTarefa.getHorario());
 
             if (depoisDoAtual && antesDoProximo) {
@@ -164,10 +174,9 @@ public class Agenda {
                     if (node == ultimo) break;
                 }
                 tarefaAtual = node;
+                tarefaAtual.antTarefa.setStatus(StatusTarefa.Falhado);
                 break;
             }
-
-            if (node.getHorario().isBefore(agora) && node.getStatus() == StatusTarefa.Pendente) node.setStatus(StatusTarefa.Falhado);
 
             if (node == ultimo) break;
             node = node.proxTarefa;
@@ -243,6 +252,22 @@ public class Agenda {
             node = node.proxTarefa;
         }
         return tarefas;
+    }
+
+    //Exportar Lista em Texto(feat: UI)
+    public String exportarListaEmTexto() {
+        if (ultimo == null) return "Nenhuma tarefa cadastrada para hoje.";
+
+        StringBuilder sb = new StringBuilder();
+        Tarefa node = ultimo.proxTarefa;
+        int i = 1;
+        while (true) {
+            sb.append(String.format("[%s] %d. %s (%s)\n",
+                    node.getHorario(), i++, node.getNome(), node.getStatus()));
+            if (node == ultimo) break;
+            node = node.proxTarefa;
+        }
+        return sb.toString();
     }
 
 }
