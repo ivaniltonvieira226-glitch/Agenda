@@ -33,7 +33,7 @@ public class AgendaUI extends JFrame {
         this.gerenciador = new Gerenciador();
 
         // Configurações da Janela
-        setTitle("Dashboard - Minha Agenda Inteligente");
+        setTitle("Dashboard");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         getContentPane().setBackground(COR_FUNDO);
 
