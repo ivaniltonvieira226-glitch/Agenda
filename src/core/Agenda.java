@@ -285,4 +285,7 @@ public class Agenda {
         return tarefas;
     }
 
+    public Tarefa getUltimo() {
+        return ultimo;
+    }
 }
