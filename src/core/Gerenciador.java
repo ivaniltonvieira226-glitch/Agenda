@@ -26,7 +26,7 @@ public class Gerenciador {
 
   public void adicionarTarefa(Tarefa tarefa) {
     if (tarefa.getHorario().isBefore(LocalTime.now()) && tarefa.getStatus() == StatusTarefa.Pendente) {
-        tarefa.setStatus(StatusTarefa.Falhado);
+      tarefa.setStatus(StatusTarefa.Falhado);
     }
 
     if (dao.registrarTarefa(tarefa, agenda.getId())) {
