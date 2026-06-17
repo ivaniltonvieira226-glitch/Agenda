@@ -79,13 +79,17 @@ public class Gerenciador {
         Tarefa atual = agenda.getUltimo().proxTarefa;
 
         // se só há uma tarefa e ela é pendente, ela deve ser a atual
-        if (atual == atual.proxTarefa && atual.getStatus() == StatusTarefa.Pendente) {
+        if (atual == atual.proxTarefa) {
+            if (atual.getStatus() != StatusTarefa.Pendente) {
+                tarefaAtual = null;
+                return;
+            }
             tarefaAtual = atual;
             return;
         }
 
         // se agora for antes da primeira tarefa
-        if (!agora.isAfter(atual.getHorario())) {
+        if (!agora.isAfter(atual.getHorario()) && atual.getStatus() == StatusTarefa.Pendente) {
             tarefaAtual = atual;
             return;
         }
