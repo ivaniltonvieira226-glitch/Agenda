@@ -73,7 +73,7 @@ public class GerenciadorBanco {
         
         Agenda agenda = new Agenda(id, data);
         // Para histórico, não precisa definir tarefa atual
-        findTarefas(agenda, false);
+        findTarefas(agenda);
 
         Relatorio relatorio = agenda.gerarRelatorio();
         historico.adicionarRelatorio(relatorio);
@@ -87,10 +87,6 @@ public class GerenciadorBanco {
   }
 
   private void findTarefas(Agenda agenda) {
-    findTarefas(agenda, false);
-  }
-  
-  private void findTarefas(Agenda agenda, boolean definirAtual) {
     String sql = "SELECT id, nome, descricao, horario, status, ciclico " +
     "FROM tarefa " +
     "WHERE id_agenda = (?) " +
@@ -112,11 +108,6 @@ public class GerenciadorBanco {
 
         // Usar método que não define tarefa atual a cada adição
         agenda.adicionarTarefaSemDefinir(tarefa);
-      }
-      
-      // Depois que todas as tarefas foram adicionadas, define a tarefa atual UMA VEZ
-      if (definirAtual) {
-        agenda.definirTarefaAtual();
       }
 
     } catch(SQLException e) {
@@ -201,8 +192,7 @@ public class GerenciadorBanco {
       adicionarTarefasCiclicasRecentes(agendaAtual);
     }
     
-    // Garante que a tarefa atual seja definida corretamente uma única vez
-    agendaAtual.definirTarefaAtual();
+
 
     return agendaAtual;
   }

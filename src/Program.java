@@ -58,10 +58,10 @@ public class Program {
         //esse método tanto atualiza o status no banco quanto no programa
         //e também faz com que a tarefa atual da agenda passe a ser a proxima
         System.out.println("\nTarefa atual antes de atualizar seu status");
-        System.out.println(gerenciador.getAgenda().getNomeTarefaAtual());
+        System.out.println(gerenciador.getNomeTarefaAtual());
         gerenciador.atualizarTarefaAtual(StatusTarefa.Concluido);
         System.out.println("\nTarefa atual depois de atualizar o status da tarefa anterior");
-        System.out.println(gerenciador.getAgenda().getNomeTarefaAtual());
+        System.out.println(gerenciador.getNomeTarefaAtual());
         //acho que seria interessante fazer um método proprio no gerenciador para mostrar toda a agenda
         //mas isso deixo pro proximo que for mexer nesse negocio
         System.out.println("\nToda a lista de tarefas para vc ver que o status mudou");

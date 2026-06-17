@@ -287,7 +287,7 @@ public class AgendaUI extends JFrame {
         try {
             if (gerenciador.getAgenda() != null) {
                 if (temTarefasPendentes(agendaAtual)) {
-                    Tarefa tarefaAtual = gerenciador.getAgenda().getTarefaAtual();
+                    Tarefa tarefaAtual = gerenciador.getTarefaAtual();
                     if (tarefaAtual != null) {
                         String nomeTarefa = tarefaAtual.getNome();
                         if (nomeTarefa != null && !nomeTarefa.trim().isEmpty()) {
@@ -367,7 +367,7 @@ public class AgendaUI extends JFrame {
                     primeira = ultimo.proxTarefa;
                 }
             } catch (Exception e) {
-                primeira = agenda.getTarefaAtual();
+                primeira = gerenciador.getTarefaAtual();
             }
 
             if (primeira != null) {
