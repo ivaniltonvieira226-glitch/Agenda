@@ -36,10 +36,6 @@ public class Gerenciador {
     }
 
     public boolean adicionarTarefa(Tarefa tarefa) {
-        if (tarefa.getHorario().isBefore(LocalTime.now()) && tarefa.getStatus() == StatusTarefa.Pendente) {
-            tarefa.setStatus(StatusTarefa.Falhado);
-        }
-
         if (dao.registrarTarefa(tarefa, agenda.getId())) {
             var foiAdicionada = agenda.adicionarTarefa(tarefa);
             if (foiAdicionada) this.definirTarefaAtual();
@@ -74,35 +70,56 @@ public class Gerenciador {
     public void definirTarefaAtual() {
         LocalTime agora = LocalTime.now();
 
-        // agenda vazia
         if (agenda.estaVazia()) {
             tarefaAtual = null;
             return;
         }
 
-        Tarefa node = agenda.getUltimo().proxTarefa;
+        Tarefa primeiro = agenda.getUltimo().proxTarefa;
+        Tarefa ultimo = agenda.getUltimo();
 
-        // 1. Falhar todas as tarefas pendentes que já passaram
+        // Encontrar a primeira tarefa que ainda não passou (ou seja, no futuro)
+        Tarefa node = primeiro;
+        Tarefa futura = null;
+        
         do {
-            if (node.getStatus() == StatusTarefa.Pendente && agora.isAfter(node.getHorario())) {
-                node.setStatus(StatusTarefa.Falhado);
-                dao.atualizarTarefa(node.getId(), StatusTarefa.Falhado);
+            if (agora.isBefore(node.getHorario()) && node.getStatus() == StatusTarefa.Pendente) {
+                futura = node;
+                break;
             }
             node = node.proxTarefa;
-        } while (node != agenda.getUltimo().proxTarefa);
+        } while (node != primeiro);
 
-        // 2. Definir a tarefa atual (a primeira Pendente encontrada na ordem)
-        node = agenda.getUltimo().proxTarefa;
-        do {
-            if (node.getStatus() == StatusTarefa.Pendente) {
-                tarefaAtual = node;
-                return;
+        if (futura != null) {
+            // Existe uma tarefa no futuro. Ela é a tarefa atual.
+            // TODAS as tarefas antes dela que estão pendentes devem falhar!
+            Tarefa t = primeiro;
+            while (t != futura) {
+                if (t.getStatus() == StatusTarefa.Pendente) {
+                    t.setStatus(StatusTarefa.Falhado);
+                    dao.atualizarTarefa(t.getId(), StatusTarefa.Falhado);
+                }
+                t = t.proxTarefa;
             }
-            node = node.proxTarefa;
-        } while (node != agenda.getUltimo().proxTarefa);
-
-        // se nenhuma for pendente
-        tarefaAtual = null;
+            tarefaAtual = futura;
+        } else {
+            // Nenhuma tarefa no futuro (todas já passaram).
+            // A ÚLTIMA tarefa pendente continua sendo a tarefa atual (regra da última ser a única válida).
+            // Todas antes da última falham.
+            Tarefa t = primeiro;
+            while (t != ultimo) {
+                if (t.getStatus() == StatusTarefa.Pendente) {
+                    t.setStatus(StatusTarefa.Falhado);
+                    dao.atualizarTarefa(t.getId(), StatusTarefa.Falhado);
+                }
+                t = t.proxTarefa;
+            }
+            if (ultimo.getStatus() == StatusTarefa.Pendente) {
+                tarefaAtual = ultimo;
+            } else {
+                tarefaAtual = null;
+            }
+        }
     }
 
     public void finalizarDia() {
