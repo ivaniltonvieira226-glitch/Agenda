@@ -76,30 +76,30 @@ public class Gerenciador {
             return;
         }
 
-        Tarefa atual = agenda.getUltimo().proxTarefa;
+        Tarefa node = agenda.getUltimo().proxTarefa;
 
         // se só há uma tarefa e ela é pendente, ela deve ser a atual
-        if (atual == atual.proxTarefa) {
-            if (atual.getStatus() != StatusTarefa.Pendente) {
+        if (node == node.proxTarefa) {
+            if (node.getStatus() != StatusTarefa.Pendente) {
                 tarefaAtual = null;
                 return;
             }
-            tarefaAtual = atual;
+            tarefaAtual = node;
             return;
         }
 
         // se agora for antes da primeira tarefa
-        if (!agora.isAfter(atual.getHorario()) && atual.getStatus() == StatusTarefa.Pendente) {
-            tarefaAtual = atual;
+        if (!agora.isAfter(node.getHorario()) && node.getStatus() == StatusTarefa.Pendente) {
+            tarefaAtual = node;
             return;
         }
 
-        while (atual != agenda.getUltimo()) {
-            boolean depoisDoAtual = !agora.isBefore(atual.getHorario());
-            boolean antesDoProximo = agora.isBefore(atual.proxTarefa.getHorario());
+        while (node != agenda.getUltimo()) {
+            boolean depoisDoAtual = !agora.isBefore(node.getHorario());
+            boolean antesDoProximo = agora.isBefore(node.proxTarefa.getHorario());
 
             if (depoisDoAtual && antesDoProximo) {
-                Tarefa candidata = atual.proxTarefa;
+                Tarefa candidata = node.proxTarefa;
 
                 while (candidata.getStatus() != StatusTarefa.Pendente) {
                     if (candidata == agenda.getUltimo()) {
@@ -111,15 +111,15 @@ public class Gerenciador {
 
                 tarefaAtual = candidata;
                 return;
-            } else if (atual.getStatus() == StatusTarefa.Pendente) {
-                atual.setStatus(StatusTarefa.Falhado);
-                dao.atualizarTarefa(atual.getId(), StatusTarefa.Falhado);
+            } else if (node.getStatus() == StatusTarefa.Pendente) {
+                node.setStatus(StatusTarefa.Falhado);
+                dao.atualizarTarefa(node.getId(), StatusTarefa.Falhado);
             }
 
-            atual = atual.proxTarefa;
+            node = node.proxTarefa;
         }
 
-        if (atual.getStatus() == StatusTarefa.Pendente) tarefaAtual = atual;
+        if (node.getStatus() == StatusTarefa.Pendente) tarefaAtual = node;
     }
 
     public void finalizarDia() {
